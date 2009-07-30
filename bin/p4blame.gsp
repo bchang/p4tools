@@ -3,7 +3,7 @@
 classpath "../src"
 
 uses gw.lang.cli.CommandLineAccess
-uses gw.util.p4.P4Blame
+uses gw.util.p4.tools.blame.P4Blame
 
 if (CommandLineAccess.getRawArgs().Count != 1) {
   java.lang.System.err.println("Usage: " + CommandLineAccess.getCurrentProgram() + " <file to annotate>")
