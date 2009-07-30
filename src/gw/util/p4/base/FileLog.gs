@@ -1,0 +1,23 @@
+package gw.util.p4.base
+
+interface FileLog {
+
+  function on(path : Path) : List<Entry>
+
+  static interface Entry {
+
+    property get PathRev() : PathRev
+    property get Change() : int
+    property get Op() : String
+    property get Date() : String
+    property get User() : String
+    property get Sources() : List<Detail>
+    property get Targets() : List<Detail>
+
+    static interface Detail {
+      property get SubOp() : String
+      property get Direction() : String
+      property get PathRev() : PathRev
+    }
+  }
+}

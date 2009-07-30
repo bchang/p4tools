@@ -1,41 +1,64 @@
-package gw.util.p4
+package gw.util.p4.tools.blame
 
 uses java.io.BufferedReader
-uses java.io.File
 uses java.util.ArrayList
+uses gw.util.p4.base.P4Factory
+uses gw.util.p4.base.Path
+uses gw.util.p4.base.FileLog
+uses gw.util.p4.base.Diff2
+uses gw.util.p4.base.PathRange
+uses gw.util.p4.base.P4Client
+uses java.util.Arrays
 
 class P4Blame
 {
-  var _p4 = new P4Client()
+  var _p4 : P4Client
+  var _logBacktracks : boolean as LogBacktracks = false
 
   construct() {
+    this(P4Factory.createP4())
   }
 
+  construct(p4 : P4Client) {
+    _p4 = p4
+  }
 
-  function forPath(path : String) : RecordList {
+  function forPath(pathStr : String) : RecordList {
     var start = new java.util.Date().Time
     try {    
-      path = _p4.fstat(path)["depotFile"]
+      pathStr = _p4.fstat(pathStr)["depotFile"]
     }
     catch (t : java.lang.Throwable) {
-      throw "No such file: ${path}"
+      throw "No such file: ${pathStr}"
     }
-    var pathrev = _p4.createPathRev(path)
-    var recordList = new RecordList(pathrev as String, _p4.printq(pathrev).map( \ line -> new Record(line) ))
-    backtrackWithinPath(recordList, pathrev)
+    var path = P4Factory.createPath(pathStr)
+    var recordList = new RecordList(path.toString(), _p4.print(path).map( \ line -> new Record(line) ))
+    backtrackWithinPath(recordList, path, 0)
  
     print("time elapsed: " + ((new java.util.Date().Time - start) / 1000) + " seconds")
 
     return recordList
   }
 
-  private function backtrackWithinPath(recordList : RecordList, pathrev : P4Client.PathRev) {
+  private function indent(n : int) : String {
+    var bytes = new byte[n << 3]
+    Arrays.fill(bytes, 32 as byte)
+    return new String(bytes)
+  }
+
+  private function backtrackWithinPath(recordList : RecordList, pathrev : Path, recursionDepth : int) {
+    if (LogBacktracks) {
+      print("${indent(recursionDepth)}backtracking into: ${pathrev}")
+    }
     var workingList = recordList.dup()
     var filelog = _p4.filelog(pathrev)
 
     for (logEntry in filelog index i) {
       if (recordList.isComplete()) {
         break
+      }
+      if (LogBacktracks) {
+        print("${indent(recursionDepth)}  " + logEntry.PathRev)
       }
 
       workingList.resetAllFlags()
@@ -49,7 +72,7 @@ class P4Blame
       }
 
       for (source in logEntry.Sources) {
-        backtrackIntoIntegSource(origWorkingList.dup(), source, logEntry)
+        backtrackIntoIntegSource(origWorkingList.dup(), source, logEntry, recursionDepth)
       }
 
       if (recordList.foundBaseRevision(logEntry)) {
@@ -59,7 +82,7 @@ class P4Blame
     }
   }
 
-  private function backtrackRevWithinPath(workingList : RecordList, logEntry : P4Client.FileLogEntry, logEntryPrev : P4Client.FileLogEntry) {
+  private function backtrackRevWithinPath(workingList : RecordList, logEntry : FileLog.Entry, logEntryPrev : FileLog.Entry) {
     for (diffEntry in _p4.diff2(logEntry.PathRev, logEntryPrev.PathRev)) {
       // simulate the change (backwards)
       var removedRecs = backtrack(workingList, diffEntry)
@@ -70,8 +93,12 @@ class P4Blame
     }
   }
 
-  function backtrackIntoIntegSource(recordList : RecordList, sourcePathRev : P4Client.PathRev, logEntry : P4Client.FileLogEntry) {
+  function backtrackIntoIntegSource(recordList : RecordList, sourceDetail : FileLog.Entry.Detail, logEntry : FileLog.Entry, recursionDepth : int) {
     var forkedList = recordList.dup()
+    var sourcePathRev = sourceDetail.PathRev
+    if (sourcePathRev typeis PathRange) {
+      sourcePathRev = sourcePathRev.EndPathRev
+    }
 
     // mask unflagged lines, to be ignored when exploring the source branch
     for (rec in forkedList index i) {
@@ -88,21 +115,21 @@ class P4Blame
         rec.resetSourceRev()
       }
     }
-    backtrackWithinPath( forkedList, sourcePathRev )
+    backtrackWithinPath( forkedList, sourcePathRev, recursionDepth + 1 )
   }
 
-  private function backtrack(records : RecordList, diffEntry : P4Client.DiffEntry) : List<Record> {
+  private function backtrack(records : RecordList, diffEntry : Diff2.Entry) : List<Record> {
     var removedRecs = new ArrayList<Record>()
     if (diffEntry.Op == "c" or diffEntry.Op == "d") {
-      for (n in diffEntry.LeftLines) {
-        var indexToRemove = (diffEntry.Op == "d") ? diffEntry.RightLines.start + 1 : diffEntry.RightLines.start
+      for (n in diffEntry.LeftRange) {
+        var indexToRemove = (diffEntry.Op == "d") ? diffEntry.RightRange.start : diffEntry.RightRange.start - 1
         var removedRec = records.remove(indexToRemove)
         if (removedRec != null) removedRecs.add(removedRec)
       }
     }
     if (diffEntry.Op == "c" or diffEntry.Op == "a") {
-      for (n in diffEntry.RightLines) {
-        records.add(n, null)
+      for (n in diffEntry.RightRange) {
+        records.add(n - 1, null)
       }
     }
     return removedRecs
