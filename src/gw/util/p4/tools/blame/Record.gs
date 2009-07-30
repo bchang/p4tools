@@ -1,8 +1,10 @@
-package gw.util.p4
+package gw.util.p4.tools.blame
+
+uses gw.util.p4.base.FileLog
 
 class Record
 {
-  var _fileLogEntry : P4Client.FileLogEntry as readonly LogEntry
+  var _fileLogEntry : FileLog.Entry as readonly LogEntry
   var _line : String as readonly Line
   var _flag : boolean as FlaggedForInterest
 
@@ -10,7 +12,7 @@ class Record
     _line = lineArg
   }
 
-  function foundSourceRev(entry : P4Client.FileLogEntry) {
+  function foundSourceRev(entry : FileLog.Entry) {
     _fileLogEntry = entry
   }
 
