@@ -1,6 +1,5 @@
 package gw.util.p4.tools.blame
 
-uses java.io.BufferedReader
 uses java.util.ArrayList
 uses gw.util.p4.base.P4Factory
 uses gw.util.p4.base.Path
@@ -10,6 +9,8 @@ uses gw.util.p4.base.PathRange
 uses gw.util.p4.base.P4Client
 uses java.util.Arrays
 
+// need caching
+// better error handling for entry point, handle revs
 class P4Blame
 {
   var _p4 : P4Client
@@ -25,7 +26,7 @@ class P4Blame
 
   function forPath(pathStr : String) : RecordList {
     var start = new java.util.Date().Time
-    try {    
+    try {
       pathStr = _p4.fstat(pathStr)["depotFile"]
     }
     catch (t : java.lang.Throwable) {
@@ -38,12 +39,6 @@ class P4Blame
     print("time elapsed: " + ((new java.util.Date().Time - start) / 1000) + " seconds")
 
     return recordList
-  }
-
-  private function indent(n : int) : String {
-    var bytes = new byte[n << 3]
-    Arrays.fill(bytes, 32 as byte)
-    return new String(bytes)
   }
 
   private function backtrackWithinPath(recordList : RecordList, pathrev : Path, recursionDepth : int) {
@@ -64,31 +59,27 @@ class P4Blame
       workingList.resetAllFlags()
       var origWorkingList = workingList.dup()
 
-      if (i < filelog.Count - 1) {
-        backtrackRevWithinPath(workingList, logEntry, filelog[i + 1])
+      if (isFirstRevisionForPath(logEntry)) {
+        workingList.flagAllLinesAsPotentiallyFromInteg()
       }
       else {
-        workingList.flagAllLinesAsPotentiallyFromInteg()
+        for (diffEntry in _p4.diff2(filelog[i].PathRev, filelog[i + 1].PathRev)) {
+          // simulate the change (backwards)
+          var removedRecs = backtrack(workingList, diffEntry)
+          for (removedRec in removedRecs) {
+            removedRec.foundSourceRev(logEntry)
+            removedRec.FlaggedForInterest = true
+          }
+        }
       }
 
       for (source in logEntry.Sources) {
         backtrackIntoIntegSource(origWorkingList.dup(), source, logEntry, recursionDepth)
       }
 
-      if (recordList.foundBaseRevision(logEntry)) {
+      if (isFirstRevisionForPath(logEntry)) {
         recordList.setAllPendingRecords(logEntry)
         break
-      }
-    }
-  }
-
-  private function backtrackRevWithinPath(workingList : RecordList, logEntry : FileLog.Entry, logEntryPrev : FileLog.Entry) {
-    for (diffEntry in _p4.diff2(logEntry.PathRev, logEntryPrev.PathRev)) {
-      // simulate the change (backwards)
-      var removedRecs = backtrack(workingList, diffEntry)
-      for (removedRec in removedRecs) {
-        removedRec.foundSourceRev(logEntry)
-        removedRec.FlaggedForInterest = true
       }
     }
   }
@@ -135,7 +126,14 @@ class P4Blame
     return removedRecs
   }
 
-  static function prompt() : String {
-    return new BufferedReader(new java.io.InputStreamReader(java.lang.System.in, "UTF-8")).readLine()
+  private function isFirstRevisionForPath(logEntry : FileLog.Entry) : boolean {
+    return logEntry.Op == "add" or logEntry.Op == "branch"
   }
+
+  private function indent(n : int) : String {
+    var bytes = new byte[n << 3]
+    Arrays.fill(bytes, 32 as byte)
+    return new String(bytes)
+  }
+
 }

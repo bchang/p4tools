@@ -90,10 +90,6 @@ class RecordList implements List<Record>
     return true
   }
 
-  function foundBaseRevision(logEntry : FileLog.Entry) : boolean {
-    return logEntry.Op == "add"
-  }
-
   function setAllPendingRecords(logEntry : FileLog.Entry) {
     for (rec in this) {
       if (rec != null and !rec.hasFoundSourceRev()) {
