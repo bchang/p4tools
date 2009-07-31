@@ -151,6 +151,26 @@ class P4BlameTest extends AbstractP4Test {
     assertRecord(change4, "testuser", "//depot/${fileA.Name}#2", "7b", recordList[7])
   }
 
+  public function testBlameForFileWhichIsRenamedAndThenRenamedBack() {
+    var fileA = newUniqueFile()
+    var change1 = createFileAndSubmit(fileA, "A\nB\nC\n")
+    var fileB = newUniqueFile()
+    moveFileAndSubmit(fileA, fileB)
+
+    print("Test moving ${fileA.Path} to ${fileB.Path}")
+    print(P4.run("integ -f \"${fileB.Path}\" \"${fileA.Path}\"").trim())
+    print(P4.run("delete \"${fileB.Path}\"").trim())
+    editFile(fileA, "A\nB\nC\nD\n")
+    var change3 = submit({fileA, fileB}, "test moved file")
+
+    var recordList = new P4Blame(P4).forPath(fileA.Path)
+    assertEquals(4, recordList.Count)
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "A", recordList[0])
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "B", recordList[1])
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "C", recordList[2])
+    assertRecord(change3, "testuser", "//depot/${fileA.Name}#3", "D", recordList[3])
+  }
+
   private function assertRecord(change : int, user : String, path : String, line : String, rec : Record) {
     assertEquals(change, rec.LogEntry.Change)
     assertEquals(user, rec.LogEntry.User)
