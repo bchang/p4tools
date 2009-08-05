@@ -164,8 +164,16 @@ abstract class AbstractP4Test extends TestClass {
   }
 
   function newUniqueFile() : File {
+    return newUniqueFile(_clientRoot)
+  }
+
+  function newUniqueFile(dir : File) : File {
     _uniqueFileCounter++
-    return new File(_clientRoot, "${Type.RelativeName}${_uniqueFileCounter}.txt")
+    return new File(dir, "${Type.RelativeName}${_uniqueFileCounter}.txt")
+  }
+
+  function newClientFile(relPath : String) : File {
+    return new File(_clientRoot, relPath)
   }
 
 
