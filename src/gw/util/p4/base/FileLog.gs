@@ -4,6 +4,8 @@ interface FileLog {
 
   function on(path : Path) : List<Entry>
 
+  function on(path : Path, maxRevs : int) : List<Entry>
+
   static interface Entry {
 
     property get PathRev() : PathRev
