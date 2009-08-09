@@ -109,6 +109,18 @@ abstract class AbstractP4Test extends TestClass {
     print(p4("add \"${file.Path}\"").trim())
   }
 
+  function appendToFileAndSubmit(file : File, appendContent : String) : int {
+    appendToFile(file, appendContent)
+    return submit({file}, "test appended to file")
+  }
+
+  function appendToFile(file : File, appendContent : String) {
+    print("Test appending to ${file.Path}")
+    print(p4("edit \"${file.Path}\"").trim())
+    var content = file.read() + appendContent
+    file.write(content)
+  }
+
   function editFileAndSubmit(file : File, content : String) : int {
     editFile(file, content)
     return submit({file}, "test edited file")
@@ -168,8 +180,12 @@ abstract class AbstractP4Test extends TestClass {
   }
 
   function newUniqueFile(dir : File) : File {
+    return newUniqueFile(dir, Type.RelativeName)
+  }
+
+  function newUniqueFile(dir : File, namePrefix : String) : File {
     _uniqueFileCounter++
-    return new File(dir, "${Type.RelativeName}${_uniqueFileCounter}.txt")
+    return new File(dir, "${namePrefix}${_uniqueFileCounter}.txt")
   }
 
   function newClientFile(relPath : String) : File {

@@ -43,6 +43,15 @@ class P4ClientImpl implements P4Client {
     return filelog.on(path)
   }
 
+  override function filelog(path : String, maxRevs : int) : List<FileLog.Entry> {
+    return filelog(P4Factory.createPath(path), maxRevs)
+  }
+
+  override function filelog(path : Path, maxRevs : int) : List<FileLog.Entry> {
+    var filelog = new FileLogImpl(this)
+    return filelog.on(path, maxRevs)
+  }
+
   override function fstat(path : String) : Map<String, String> {
     return fstat(P4Factory.createPath(path))
   }
