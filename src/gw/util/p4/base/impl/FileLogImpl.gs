@@ -5,6 +5,7 @@ uses gw.util.p4.base.Path
 uses java.util.regex.Pattern
 uses gw.util.p4.base.PathRev
 uses gw.util.p4.base.P4Factory
+uses java.util.ArrayList
 
 class FileLogImpl extends AbstractOperation implements FileLog {
 
@@ -12,6 +13,7 @@ class FileLogImpl extends AbstractOperation implements FileLog {
   static var DETAIL_PAT = Pattern.compile("\\.\\.\\. \\.\\.\\. (\\w+) (\\w+) (([^#]+)#(\\d+)(,#(\\d+))?)")
 
   var _path : Path
+  var _maxRevs : int
   var _list : List<EntryImpl>
 
   protected construct(client : P4ClientImpl) {
@@ -19,17 +21,23 @@ class FileLogImpl extends AbstractOperation implements FileLog {
   }
 
   override function on(p : Path) : List<EntryImpl> {
+    return on(p, 0)
+  }
+
+  override function on(p : Path, maxRevs : int) : List<EntryImpl> {
     if (p typeis PathRange) {
       throw "cannot do filelog operation on a path range"
     }
     _path = p
+    _maxRevs = maxRevs
     _list = {}
     run()
     return _list
   }
 
   override function getCommand() : String {
-    return "filelog \"${_path.toString()}\""
+    var maxRevsArg = _maxRevs > 0 ? "-m ${_maxRevs} " : ""
+    return "filelog ${maxRevsArg}\"${_path.toString()}\""
   }
 
   override function handleLine(line : String) {
@@ -63,6 +71,11 @@ class FileLogImpl extends AbstractOperation implements FileLog {
           throw "unrecognized filelog entry detail direction: ${detail.Direction}"
         }
       }
+      else {
+        if (!line.startsWith("//depot/")) {
+          throw line
+        }
+      }
     }
   }
 
@@ -85,6 +98,10 @@ class FileLogImpl extends AbstractOperation implements FileLog {
       var _subOp : String as SubOp
       var _direction : String as Direction
       var _pathRev : PathRev as PathRev
+      
+      override function toString() : String {
+        return "${SubOp} ${Direction} ${PathRev}"
+      }
     }
   }
 

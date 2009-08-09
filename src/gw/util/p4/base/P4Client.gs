@@ -14,6 +14,8 @@ interface P4Client {
 
   function filelog(path : Path) : List<FileLog.Entry>
   function filelog(path : String) : List<FileLog.Entry>
+  function filelog(path : Path, maxRevs : int) : List<FileLog.Entry>
+  function filelog(path : String, maxRevs : int) : List<FileLog.Entry>
 
   function fstat(path : Path) : Map<String, String>
   function fstat(path : String) : Map<String, String>
