@@ -73,7 +73,7 @@ abstract class AbstractP4Test extends TestClass {
       "LineEnd: local\n" +
       "View:\n" +
       "  //depot/... //${_p4.Client}/...\n"
-    print(p4("client -i", clientspec))
+    print(p4Impl("client -i", clientspec))
   }
 
   function newBranch(branchName : String, desc : String, view : String) {
@@ -83,7 +83,7 @@ abstract class AbstractP4Test extends TestClass {
       "  ${desc}\n" +
       "View:\n" +
       "  ${view}\n"
-    print(p4("branch -i", spec))
+    print(p4Impl("branch -i", spec))
   }
 
   function newChange(desc : String) : int {
@@ -93,7 +93,7 @@ abstract class AbstractP4Test extends TestClass {
       "Status: new\n" +
       "Description:\n" +
       "  ${desc}\nFiles:\n"
-    var cmdOutput = p4("change -i", spec)
+    var cmdOutput = p4Impl("change -i", spec)
     var matcher = Pattern.compile("^Change (\\d+) .*").matcher(cmdOutput)
     return matcher.matches() ? Integer.parseInt(matcher.group(1)) : 0
   }
@@ -106,7 +106,7 @@ abstract class AbstractP4Test extends TestClass {
   function createFile(file : File, content : String) {
     print("Test creating and adding ${file.Path}")
     file.write(content)
-    print(p4("add \"${file.Path}\"").trim())
+    print(p4Impl("add \"${file.Path}\"").trim())
   }
 
   function appendToFileAndSubmit(file : File, appendContent : String) : int {
@@ -116,7 +116,7 @@ abstract class AbstractP4Test extends TestClass {
 
   function appendToFile(file : File, appendContent : String) {
     print("Test appending to ${file.Path}")
-    print(p4("edit \"${file.Path}\"").trim())
+    print(p4Impl("edit \"${file.Path}\"").trim())
     var content = file.read() + appendContent
     file.write(content)
   }
@@ -128,7 +128,7 @@ abstract class AbstractP4Test extends TestClass {
 
   function editFile(file : File, content : String) {
     print("Test editing ${file.Path}")
-    print(p4("edit \"${file.Path}\"").trim())
+    print(p4Impl("edit \"${file.Path}\"").trim())
     file.write(content)
   }
 
@@ -139,9 +139,9 @@ abstract class AbstractP4Test extends TestClass {
 
   function integFile(fromFile : File, toFile : File) {
     print("Test integrating ${fromFile.Path} to ${toFile.Path}")
-    print(p4("integ \"${fromFile.Path}\" \"${toFile.Path}\"").trim())
+    print(p4Impl("integ \"${fromFile.Path}\" \"${toFile.Path}\"").trim())
     print("Test resolving ${toFile.Path}")
-    print(p4("resolve -a \"${toFile.Path}\"").trim())
+    print(p4Impl("resolve -a \"${toFile.Path}\"").trim())
   }
 
   function moveFileAndSubmit(fromFile : File, toFile : File) : int {
@@ -151,8 +151,8 @@ abstract class AbstractP4Test extends TestClass {
 
   function moveFile(fromFile : File, toFile : File) {
     print("Test moving ${fromFile.Path} to ${toFile.Path}")
-    print(p4("integ \"${fromFile.Path}\" \"${toFile.Path}\"").trim())
-    print(p4("delete \"${fromFile.Path}\"").trim())
+    print(p4Impl("integ \"${fromFile.Path}\" \"${toFile.Path}\"").trim())
+    print(p4Impl("delete \"${fromFile.Path}\"").trim())
   }
 
   function deleteFileAndSubmit(file : File) : int {
@@ -162,16 +162,21 @@ abstract class AbstractP4Test extends TestClass {
 
   function deleteFile(file : File) {
     print("Test deleting ${file.Path}")
-    print(p4("delete \"${file.Path}\"").trim())
+    print(p4Impl("delete \"${file.Path}\"").trim())
+  }
+
+  function p4(cmd : String) {
+    print("Test running custom command '${cmd}'")
+    print(p4Impl(cmd).trim())
   }
 
   function submit(files : List<File>, desc : String) : int {
     print("Test submitting files " + files)
     var changeNum = newChange(desc)
     for (file in files) {
-      p4("reopen -c ${changeNum} \"${file.Path}\"")
+      p4Impl("reopen -c ${changeNum} \"${file.Path}\"")
     }
-    print(p4("submit -c ${changeNum}").trim())
+    print(p4Impl("submit -c ${changeNum}").trim())
     return changeNum
   }
 
@@ -193,11 +198,11 @@ abstract class AbstractP4Test extends TestClass {
   }
 
 
-  private function p4(op : String) : String {
+  private function p4Impl(op : String) : String {
     return _p4.run(op)
   }
 
-  private function p4(op : String, input : String) : String {
+  private function p4Impl(op : String, input : String) : String {
     var out = new StringBuilder()
     _p4.run(op, \ proc ->{
       proc.write(input)

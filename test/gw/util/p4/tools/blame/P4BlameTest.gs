@@ -158,8 +158,8 @@ class P4BlameTest extends AbstractP4Test {
     moveFileAndSubmit(fileA, fileB)
 
     print("Test moving ${fileA.Path} to ${fileB.Path}")
-    print(P4.run("integ -f \"${fileB.Path}\" \"${fileA.Path}\"").trim())
-    print(P4.run("delete \"${fileB.Path}\"").trim())
+    p4("integ -f \"${fileB.Path}\" \"${fileA.Path}\"")
+    deleteFile(fileB)
     editFile(fileA, "A\nB\nC\nD\n")
     var change3 = submit({fileA, fileB}, "test moved file")
 
@@ -169,6 +169,15 @@ class P4BlameTest extends AbstractP4Test {
     assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "B", recordList[1])
     assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "C", recordList[2])
     assertRecord(change3, "testuser", "//depot/${fileA.Name}#3", "D", recordList[3])
+  }
+
+  public function testExceptionThrownWhenForFileNotInDepot() {
+  }
+
+  public function testWithLocalChanges() {
+  }
+
+  public function testWithNonHeadRevision() {
   }
 
   private function assertRecord(change : int, user : String, path : String, line : String, rec : Record) {
