@@ -5,7 +5,6 @@ uses gw.util.p4.base.Path
 uses java.util.regex.Pattern
 uses gw.util.p4.base.PathRev
 uses gw.util.p4.base.P4Factory
-uses java.util.ArrayList
 
 class FileLogImpl extends AbstractOperation implements FileLog {
 
@@ -92,6 +91,10 @@ class FileLogImpl extends AbstractOperation implements FileLog {
     construct() {
       Sources = {}
       Targets = {}
+    }
+
+    override function toString() : String {
+      return "#${PathRev.Rev} change ${Change} ${Op} on ${Date} by ${User}"
     }
 
     static class DetailImpl implements FileLog.Entry.Detail {
