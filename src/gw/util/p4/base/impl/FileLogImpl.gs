@@ -9,7 +9,7 @@ uses gw.util.p4.base.P4Factory
 class FileLogImpl extends AbstractOperation implements FileLog {
 
   static var ENTRY_PAT = Pattern.compile("\\.\\.\\. #(\\d+) change (\\d+) (\\w+) on ([\\d/]+) by (\\w+).*")
-  static var DETAIL_PAT = Pattern.compile("\\.\\.\\. \\.\\.\\. (\\w+) (\\w+) (([^#]+)#(\\d+)(,#(\\d+))?)")
+  static var DETAIL_PAT = Pattern.compile("\\.\\.\\. \\.\\.\\. (\\w+)( (\\w+))? (([^#]+)#(\\d+)(,#(\\d+))?)")
 
   var _path : Path
   var _maxRevs : int
@@ -56,8 +56,8 @@ class FileLogImpl extends AbstractOperation implements FileLog {
       if (detailMatcher.matches()) {
         var detail = new EntryImpl.DetailImpl() {
           :SubOp = detailMatcher.group(1),
-          :Direction = detailMatcher.group(2),
-          :PathRev = P4Factory.createPath(detailMatcher.group(3)) as PathRev
+          :Direction = detailMatcher.group(3),
+          :PathRev = P4Factory.createPath(detailMatcher.group(4)) as PathRev
         }
 
         if (detail.Direction == "from") {
@@ -66,14 +66,14 @@ class FileLogImpl extends AbstractOperation implements FileLog {
         else if (detail.Direction == "into") {
           _list.last().Targets.add(detail)
         }
-        else if (detail.Direction != "by") {
-          throw "unrecognized filelog entry detail direction: ${detail.Direction}"
+        else {
+          if (Verbose) {
+            print("ignoring file log entry detail line: \"${line}\"")
+          }
         }
       }
-      else {
-        if (!line.startsWith("//depot/")) {
-          throw line
-        }
+      else if (!line.startsWith("//depot/")) {
+        throw "unrecognized line while parsing file log: ${line}"
       }
     }
   }

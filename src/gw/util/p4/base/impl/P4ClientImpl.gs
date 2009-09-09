@@ -15,14 +15,14 @@ class P4ClientImpl implements P4Client {
   var _port : int
   var _client : String as readonly Client
   var _user : String as User
-  var _verbose : boolean
+  var _verbose : boolean as Verbose
 
-  construct(hostname : String, port : int, clientname : String, username : String, verbose : boolean) {
+  construct(hostname : String, port : int, clientname : String, username : String, isVerbose : boolean) {
     _host = hostname
     _port = port
     _client = clientname
     _user = username
-    _verbose = verbose
+    _verbose = isVerbose
   }
 
   override function diff2(left : String, right : String) : List<Diff2.Entry> {

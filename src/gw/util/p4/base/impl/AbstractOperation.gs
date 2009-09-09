@@ -19,4 +19,6 @@ abstract class AbstractOperation {
   function handleErrLine( line : String ) {
     throw "ow ow ow! ${line}"
   }
+
+  property get Verbose() : boolean { return _client.Verbose }
 }
