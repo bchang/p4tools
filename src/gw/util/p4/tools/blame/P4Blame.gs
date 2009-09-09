@@ -8,6 +8,11 @@ uses gw.util.p4.base.Diff2
 uses gw.util.p4.base.PathRange
 uses gw.util.p4.base.P4Client
 uses java.util.Arrays
+uses java.util.Map
+uses gw.util.p4.base.PathRev
+uses java.lang.Integer
+uses gw.util.AutoMap
+uses gw.util.Pair
 
 // need caching
 // better error handling for entry point, handle revs
@@ -15,6 +20,11 @@ class P4Blame
 {
   var _p4 : P4Client
   var _logBacktracks : boolean as LogBacktracks = false
+
+  var _filelogCache : Map<String, List<FileLog.Entry>> = {}
+  var _diff2Cache = new AutoMap<Pair<Path, Path>, List<Diff2.Entry>>(\ pair -> {
+    return _p4.diff2(pair.First, pair.Second)
+  })
 
   construct() {
     this(P4Factory.createP4())
@@ -41,12 +51,33 @@ class P4Blame
     return recordList
   }
 
+  private function filelog(pathrev : Path) : List<FileLog.Entry> {
+    var cachedFilelog = _filelogCache[pathrev.Path]
+    if (cachedFilelog == null or (pathrev typeis PathRev and pathrev.Rev > cachedFilelog.Count)) {
+      cachedFilelog = _p4.filelog(pathrev)
+      _filelogCache[pathrev.Path] = cachedFilelog
+    }
+    if (pathrev typeis PathRev and pathrev.Rev > 0) {
+      // get a "sublist" beginning at cachedFilelog.length - pathrev.Rev
+      var list : List<FileLog.Entry> = {}
+      for (n in Integer.range(cachedFilelog.Count - pathrev.Rev, cachedFilelog.Count - 1)) {
+        list.add(cachedFilelog[n])
+      }
+      return list
+    }
+    return cachedFilelog
+  }
+
+  private function diff2(left : Path, right : Path) : List<Diff2.Entry> {
+    return _diff2Cache[new Pair<Path, Path>(left, right)]
+  }
+
   private function backtrackWithinPath(recordList : RecordList, pathrev : Path, recursionDepth : int) {
     if (LogBacktracks) {
       print("${indent(recursionDepth)}backtracking into: ${pathrev}")
     }
     var workingList = recordList.dup()
-    var filelog = _p4.filelog(pathrev)
+    var filelog = filelog(pathrev)
 
     for (logEntry in filelog index i) {
       if (recordList.isComplete()) {
@@ -63,7 +94,7 @@ class P4Blame
         workingList.flagAllLinesAsPotentiallyFromInteg()
       }
       else {
-        for (diffEntry in _p4.diff2(filelog[i].PathRev, filelog[i + 1].PathRev)) {
+        for (diffEntry in diff2(filelog[i].PathRev, filelog[i + 1].PathRev)) {
           // simulate the change (backwards)
           var removedRecs = backtrack(workingList, diffEntry)
           for (removedRec in removedRecs) {
@@ -98,7 +129,7 @@ class P4Blame
       }
     }
 
-    for (diffEntry in _p4.diff2(logEntry.PathRev, sourcePathRev)) {
+    for (diffEntry in diff2(logEntry.PathRev, sourcePathRev)) {
       backtrack(forkedList, diffEntry)
     }
     for (rec in forkedList index i) {
