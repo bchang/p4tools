@@ -13,6 +13,9 @@ uses java.lang.StringBuilder
 
 abstract class AbstractP4Test extends TestClass {
 
+  static final var P4D_NAME = "p4d-2009.1"
+  static final var P4D_LOCATION = "/opt/perforce"
+
   static var _tmpDir = new File(System.getProperty("java.io.tmpdir"), "p4test")
   static var _clientRoot = new File(_tmpDir, "client")
   static var _p4 : P4Client as P4
@@ -28,7 +31,7 @@ abstract class AbstractP4Test extends TestClass {
 
     // Kill any previously running server
     try {
-      Shell.buildProcess("killall p4d")
+      Shell.buildProcess("killall ${P4D_NAME}")
         .withStdErrHandler(new ProcessStarter.NullOutputHandler())
         .exec()
       //Shell.exec("killall p4d")
@@ -44,7 +47,7 @@ abstract class AbstractP4Test extends TestClass {
 
     // Start server
     serverRoot.mkdirs()
-    var process = Shell.buildProcess("/usr/local/p4/p4d -d")
+    var process = Shell.buildProcess("${P4D_LOCATION}/${P4D_NAME} -d")
     process.Environment["P4ROOT"] = serverRoot.Path
     process.Environment["P4PORT"] = serverPort as String
     process.start()
