@@ -8,6 +8,7 @@ uses gw.util.p4.base.Path
 uses gw.util.Shell
 uses java.lang.StringBuilder
 uses gw.util.ProcessStarter
+uses java.util.HashSet
 
 class P4ClientImpl implements P4Client {
 
@@ -16,13 +17,39 @@ class P4ClientImpl implements P4Client {
   var _client : String as readonly Client
   var _user : String as User
   var _verbose : boolean as Verbose
+  var _stats : Stats
 
   construct(hostname : String, port : int, clientname : String, username : String, isVerbose : boolean) {
+    this(hostname, port, clientname, username, isVerbose, false)
+  }
+
+  construct(hostname : String, port : int, clientname : String, username : String, isVerbose : boolean, recordStats : boolean) {
     _host = hostname
     _port = port
     _client = clientname
     _user = username
     _verbose = isVerbose
+    if (recordStats) {
+      _stats = new Stats()
+    }
+  }
+
+  override function clearStats() {
+    if (_stats != null) {
+      _stats.clear()
+    }
+    else {
+      throw "not recording stats"
+    }
+  }
+
+  override function printStats() {
+    if (_stats != null) {
+      _stats.print()
+    }
+    else {
+      throw "not recording stats"
+    }
   }
 
   override function diff2(left : String, right : String) : List<Diff2.Entry> {
@@ -31,6 +58,9 @@ class P4ClientImpl implements P4Client {
 
   override function diff2(left : Path, right : Path) : List<Diff2.Entry> {
     var diff2 = new Diff2Impl(this)
+    if (_stats != null) {
+      _stats.recordDiff2(left.toString() + " " + right.toString())
+    }
     return diff2.on(left, right)
   }
 
@@ -40,6 +70,9 @@ class P4ClientImpl implements P4Client {
 
   override function filelog(path : Path) : List<FileLog.Entry> {
     var filelog = new FileLogImpl(this)
+    if (_stats != null) {
+      _stats.recordFilelog(path.Path)
+    }
     return filelog.on(path)
   }
 
@@ -114,5 +147,36 @@ class P4ClientImpl implements P4Client {
       process.Environment["P4USER"] = _user
     }
     return process
+  }
+
+  class Stats {
+    var _diff2CallCount = 0
+    var _diff2CallLog = new HashSet<String>()
+    var _filelogCallCount = 0
+    var _filelogCallLog = new HashSet<String>()
+
+    function clear() {
+      _diff2CallCount = 0
+      _diff2CallLog.clear()
+      _filelogCallCount = 0
+      _filelogCallLog.clear()
+    }
+
+    function print() {
+      print("# diff2 calls: ${_diff2CallCount}")
+      print("# unique diff2 calls: ${_diff2CallLog.Count}")
+      print("# filelog calls: ${_filelogCallCount}")
+      print("# unique filelog calls: ${_filelogCallLog.Count}")
+    }
+
+    function recordDiff2(str : String) {
+      _diff2CallCount++
+      _diff2CallLog.add(str)
+    }
+
+    function recordFilelog(str : String) {
+      _filelogCallCount++
+      _filelogCallLog.add(str)
+    }
   }
 }
