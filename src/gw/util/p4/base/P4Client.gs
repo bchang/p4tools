@@ -9,6 +9,9 @@ interface P4Client {
   abstract property get User() : String
   abstract property set User(s : String)
 
+  function clearStats()
+  function printStats()
+
   function diff2(left : Path, right : Path) : List<Diff2.Entry>
   function diff2(left : String, right : String) : List<Diff2.Entry>
 
