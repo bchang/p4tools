@@ -15,7 +15,11 @@ class P4Factory {
   }
 
   static function createP4(host : String, port : int, client : String, user : String, verbose : boolean) : P4Client {
-    return new P4ClientImpl(host, port, client, user, verbose)
+    return createP4(host, port, client, user, verbose, false)
+  }
+
+  static function createP4(host : String, port : int, client : String, user : String, verbose : boolean, recordStats : boolean) : P4Client {
+    return new P4ClientImpl(host, port, client, user, verbose, recordStats)
   }
 
   static function createPath(s : String) : Path {
