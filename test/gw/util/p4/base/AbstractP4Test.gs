@@ -55,13 +55,14 @@ abstract class AbstractP4Test extends TestClass {
     Thread.sleep(2000)
 
     // Create one client
-    _p4 = P4Factory.createP4(serverHost, serverPort, client, null, true)
+    _p4 = P4Factory.createP4(serverHost, serverPort, client, null, true, true)
     _clientRoot.mkdirs()
   }
 
   override function beforeTestMethod() {
     _p4.User = "testuser"
     saveClient()
+    _p4.clearStats()
   }
 
   function saveClient() {
