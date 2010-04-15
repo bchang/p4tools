@@ -36,16 +36,21 @@ class P4Blame
 
   function forPath(pathStr : String) : RecordList {
     var start = new java.util.Date().Time
-    try {
-      pathStr = _p4.fstat(pathStr)["depotFile"]
-    }
-    catch (t : java.lang.Throwable) {
-      throw "No such file: ${pathStr}"
+
+    var fstatDepotFile = _p4.fstat(pathStr)["depotFile"]
+    if (fstatDepotFile == null) {
+      throw "No such file in depot: ${pathStr}"
     }
     var path = P4Factory.createPath(pathStr)
-    var recordList = new RecordList(path.toString(), _p4.print(path).map( \ line -> new Record(line) ))
+    if (path typeis PathRev) {
+      path = P4Factory.createPath(fstatDepotFile, path.Rev)
+    }
+    else {
+      path = P4Factory.createPath(fstatDepotFile)
+    }
+    var recordList = new RecordList(path as String, _p4.print(path).map( \ line -> new Record(line) ))
     backtrackWithinPath(recordList, path, 0)
- 
+
     print("time elapsed: " + ((new java.util.Date().Time - start) / 1000) + " seconds")
 
     return recordList
