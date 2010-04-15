@@ -34,7 +34,12 @@ class RecordList implements List<Record>
 
   function display() {
     var writer = new BufferedWriter(new OutputStreamWriter(System.out, "UTF-8"))
-    writeTo(writer)
+    try {
+      writeTo(writer)
+    }
+    finally {
+      writer.flush()
+    }
   }
 
   function writeTo(writer : Writer) {
