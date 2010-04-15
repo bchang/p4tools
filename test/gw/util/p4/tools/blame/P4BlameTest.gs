@@ -172,12 +172,36 @@ class P4BlameTest extends AbstractP4Test {
   }
 
   public function testExceptionThrownWhenForFileNotInDepot() {
+    var file = newUniqueFile()
+    try {
+      new P4Blame(P4).forPath(file.Path)
+      fail("should have caught exception")
+    }
+    catch (e) {
+      assertEquals("No such file in depot: ${file.Path}", e.Message)
+    }
   }
 
   public function testWithLocalChanges() {
   }
 
   public function testWithNonHeadRevision() {
+    var file = newUniqueFile()
+    var change1 = createFileAndSubmit(file, "A\nB\nC\n")
+    var change2 = editFileAndSubmit(file, "A\nB\nC\nD\n")
+
+    var recordList = new P4Blame(P4).forPath(file.Path + "#1")
+    assertEquals(3, recordList.Count)
+    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "A", recordList[0])
+    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "B", recordList[1])
+    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "C", recordList[2])
+
+    recordList = new P4Blame(P4).forPath(file.Path + "#2")
+    assertEquals(4, recordList.Count)
+    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "A", recordList[0])
+    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "B", recordList[1])
+    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "C", recordList[2])
+    assertRecord(change2, "testuser", "//depot/${file.Name}#2", "D", recordList[3])
   }
 
   private function assertRecord(change : int, user : String, path : String, line : String, rec : Record) {
