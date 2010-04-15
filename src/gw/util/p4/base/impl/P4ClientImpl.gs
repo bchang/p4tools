@@ -9,6 +9,7 @@ uses gw.util.Shell
 uses java.lang.StringBuilder
 uses gw.util.ProcessStarter
 uses java.util.HashSet
+uses java.util.Set
 
 class P4ClientImpl implements P4Client {
 
@@ -17,7 +18,7 @@ class P4ClientImpl implements P4Client {
   var _client : String as readonly Client
   var _user : String as User
   var _verbose : boolean as Verbose
-  var _stats : Stats
+  var _stats : Stats as Stats
 
   construct(hostname : String, port : int, clientname : String, username : String, isVerbose : boolean) {
     this(hostname, port, clientname, username, isVerbose, false)
@@ -150,16 +151,20 @@ class P4ClientImpl implements P4Client {
   }
 
   class Stats {
-    var _diff2CallCount = 0
-    var _diff2CallLog = new HashSet<String>()
-    var _filelogCallCount = 0
-    var _filelogCallLog = new HashSet<String>()
+    var _diff2CallCount : int as Diff2CallCount
+    var _diff2CallLog : Set<String> as Diff2CallLog
+    var _filelogCallCount : int as FilelogCallCount
+    var _filelogCallLog : Set<String> as FilelogCallLog
 
-    function clear() {
+    construct() {
+      clear()
+    }
+
+    final function clear() {
       _diff2CallCount = 0
-      _diff2CallLog.clear()
+      _diff2CallLog = new HashSet<String>()
       _filelogCallCount = 0
-      _filelogCallLog.clear()
+      _filelogCallLog = new HashSet<String>()
     }
 
     function print() {
