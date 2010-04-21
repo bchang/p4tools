@@ -50,4 +50,8 @@ class P4Factory {
   static function createPath(s : String, rev : int, endRev : int) : PathRange {
     return new PathRange(s, rev, endRev)
   }
+
+  static function createPathChange(s : String, change : int) : PathChange {
+    return new PathChange(s, change)
+  }
 }
