@@ -13,7 +13,7 @@ uses java.lang.StringBuilder
 
 abstract class AbstractP4Test extends TestClass {
 
-  static final var P4D_NAME = "p4d-2009.1"
+  static final var P4D_NAME = "p4d-2009.2"
   static final var P4D_LOCATION = "/opt/perforce"
 
   static var _tmpDir = new File(System.getProperty("java.io.tmpdir"), "p4test")
@@ -31,7 +31,7 @@ abstract class AbstractP4Test extends TestClass {
 
     // Kill any previously running server
     try {
-      Shell.buildProcess("killall ${P4D_NAME}")
+      Shell.buildProcess("p4 admin stop")
         .withStdErrHandler(new ProcessStarter.NullOutputHandler())
         .exec()
       //Shell.exec("killall p4d")
@@ -60,6 +60,7 @@ abstract class AbstractP4Test extends TestClass {
   }
 
   override function beforeTestMethod() {
+    super.beforeTestMethod()
     _p4.User = "testuser"
     saveClient()
     _p4.clearStats()
@@ -68,7 +69,7 @@ abstract class AbstractP4Test extends TestClass {
   function saveClient() {
     var clientspec = "Client: ${_p4.Client}\n" +
       "Owner: ${_p4.User}\n" +
-      "Host: ${_p4.Host}\n" +
+      "Host: \n" +
       "Description:\n" +
       "  Default client for P4Test environment\n" +
       "Root: ${_clientRoot.Path}\n" +
@@ -148,6 +149,18 @@ abstract class AbstractP4Test extends TestClass {
     print(p4Impl("resolve -a \"${toFile.Path}\"").trim())
   }
 
+  function integDirAndSubmit(fromDir : File, toDir : File) : int {
+    integDir(fromDir, toDir)
+    return submitDir({toDir}, "test integrated dir")
+  }
+
+  function integDir(fromDir : File, toDir : File) {
+    print("Test integrating ${fromDir.Path}/... to ${toDir.Path}/...")
+    print(p4Impl("integ \"${fromDir.Path}/...\" \"${toDir.Path}/...\"").trim())
+    print("Test resolving ${toDir.Path}/...")
+    print(p4Impl("resolve -a \"${toDir.Path}/...\"").trim())
+  }
+
   function moveFileAndSubmit(fromFile : File, toFile : File) : int {
     moveFile(fromFile, toFile)
     return submit({fromFile, toFile}, "test moved file")
@@ -179,6 +192,16 @@ abstract class AbstractP4Test extends TestClass {
     var changeNum = newChange(desc)
     for (file in files) {
       p4Impl("reopen -c ${changeNum} \"${file.Path}\"")
+    }
+    print(p4Impl("submit -c ${changeNum}").trim())
+    return changeNum
+  }
+
+  function submitDir(dirs : List<File>, desc : String) : int {
+    print("Test submitting dirs " + dirs)
+    var changeNum = newChange(desc)
+    for (dir in dirs) {
+      p4Impl("reopen -c ${changeNum} \"${dir.Path}/...\"")
     }
     print(p4Impl("submit -c ${changeNum}").trim())
     return changeNum
