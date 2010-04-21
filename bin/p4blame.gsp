@@ -1,4 +1,4 @@
-#!/usr/bin/env gscript
+#!/usr/bin/env gosu
 
 classpath "../src"
 
