@@ -119,7 +119,7 @@ class P4ClientImpl implements P4Client {
          .withStdErrHandler(\ line -> err.append(line).append("\n"))
          .exec()
     if (err.length() > 0) {
-      print("OH NOEZ! got stderr content:")
+      print("got stderr output:")
       print(err)
     }
     return out.toString()
