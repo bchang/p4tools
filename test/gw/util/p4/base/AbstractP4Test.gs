@@ -31,10 +31,15 @@ abstract class AbstractP4Test extends TestClass {
 
     // Kill any previously running server
     try {
-      Shell.buildProcess("p4 admin stop")
-        .withStdErrHandler(new ProcessStarter.NullOutputHandler())
-        .exec()
-      //Shell.exec("killall p4d")
+      Shell.exec("killall ${P4D_NAME}")
+
+      // the following technique is shown here and commented out to show
+      // we should NOT do it this way.  It's too risky - with the wrong environment
+      // variables, you could accidentally shut down our production p4 server.
+
+      //Shell.buildProcess("p4 admin stop")
+      //  .withStdErrHandler(new ProcessStarter.NullOutputHandler())
+      //  .exec()
     }
     catch (e : CommandFailedException) {
       // there wasn't a p4d process running - ignore
