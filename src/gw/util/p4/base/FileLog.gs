@@ -1,4 +1,5 @@
 package gw.util.p4.base
+uses java.util.List
 
 interface FileLog {
 

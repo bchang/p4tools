@@ -5,6 +5,7 @@ uses gw.util.p4.base.Path
 uses java.util.regex.Pattern
 uses gw.util.p4.base.PathRev
 uses gw.util.p4.base.P4Factory
+uses java.util.List
 
 class FileLogImpl extends AbstractOperation implements FileLog {
 
