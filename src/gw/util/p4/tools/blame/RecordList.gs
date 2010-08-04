@@ -5,6 +5,7 @@ uses java.io.BufferedWriter
 uses java.io.OutputStreamWriter
 uses java.lang.System
 uses gw.util.p4.base.FileLog
+uses java.util.List
 
 class RecordList implements List<Record>
 {
