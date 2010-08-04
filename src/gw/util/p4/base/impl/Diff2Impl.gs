@@ -5,6 +5,7 @@ uses gw.util.p4.base.Path
 uses gw.util.p4.base.PathRange
 uses java.util.regex.Pattern
 uses java.util.ArrayList
+uses java.util.List
 
 class Diff2Impl extends AbstractOperation implements Diff2 {
 
@@ -73,8 +74,8 @@ class Diff2Impl extends AbstractOperation implements Diff2 {
  
     protected construct(s : String, lr : IntegerRange, rr : IntegerRange) {
       _op = s
-      _leftrange = lr
-      _rightrange = rr
+      _leftRange = lr
+      _rightRange = rr
     }
     
     override function toString() : String {
