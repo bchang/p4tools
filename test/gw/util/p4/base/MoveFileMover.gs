@@ -9,6 +9,7 @@ class MoveFileMover extends FileMover {
 
   override function moveFile(fromFile : File, toFile : File) {
     print("Test moving ${fromFile.Path} to ${toFile.Path}")
+    _test.p4("edit \"${fromFile.Path}\"")
     _test.p4("move \"${fromFile.Path}\" \"${toFile.Path}\"")
   }
 
