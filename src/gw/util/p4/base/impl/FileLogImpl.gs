@@ -9,7 +9,7 @@ uses java.util.List
 
 class FileLogImpl extends AbstractOperation implements FileLog {
 
-  static var ENTRY_PAT = Pattern.compile("\\.\\.\\. #(\\d+) change (\\d+) (\\w+) on ([\\d/]+) by (\\w+).*")
+  static var ENTRY_PAT = Pattern.compile("\\.\\.\\. #(\\d+) change (\\d+) ([\\w/]+) on ([\\d/]+) by (\\w+).*")
   static var DETAIL_PAT = Pattern.compile("\\.\\.\\. \\.\\.\\. (\\w+)( (\\w+))? (([^#]+)#(\\d+)(,#(\\d+))?)")
 
   var _path : Path
@@ -26,7 +26,7 @@ class FileLogImpl extends AbstractOperation implements FileLog {
 
   override function on(p : Path, maxRevs : int) : List<EntryImpl> {
     if (p typeis PathRange) {
-      throw "cannot do filelog operation on a path range"
+      p = P4Factory.createPath(p.Path, p.EndRev)
     }
     _path = p
     _maxRevs = maxRevs
