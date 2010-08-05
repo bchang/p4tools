@@ -21,6 +21,16 @@ abstract class AbstractP4Test extends TestClass {
   static var _p4 : P4Client as P4
   static var _uniqueFileCounter = 0
 
+  static var _fileMover : FileMover
+
+  construct() {
+    this(new IntegDeleteFileMover(this))
+  }
+
+  construct(fileMover : FileMover) {
+    _fileMover = fileMover
+  }
+
   override function beforeTestClass() {
     super.beforeTestClass()
 
@@ -167,14 +177,11 @@ abstract class AbstractP4Test extends TestClass {
   }
 
   function moveFileAndSubmit(fromFile : File, toFile : File) : int {
-    moveFile(fromFile, toFile)
-    return submit({fromFile, toFile}, "test moved file")
+    return _fileMover.moveFileAndSubmit(fromFile, toFile)
   }
 
   function moveFile(fromFile : File, toFile : File) {
-    print("Test moving ${fromFile.Path} to ${toFile.Path}")
-    print(p4Impl("integ \"${fromFile.Path}\" \"${toFile.Path}\"").trim())
-    print(p4Impl("delete \"${fromFile.Path}\"").trim())
+    _fileMover.moveFile(fromFile, toFile)
   }
 
   function deleteFileAndSubmit(file : File) : int {
