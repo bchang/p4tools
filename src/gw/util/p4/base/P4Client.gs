@@ -27,5 +27,8 @@ interface P4Client {
   function print(path : String) : List<String>
 
   function run(op : String) : String
+  function runUntil(op : String, accept(line : String) : boolean) : String
+  function exec(op : String)
+  function exec(op : String, handleStdOut(line : String))
   function run(op : String, handler : ProcessStarter.ProcessHandler)
 }
