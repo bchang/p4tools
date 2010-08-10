@@ -113,16 +113,26 @@ class P4ClientImpl implements P4Client {
 
   override function run(op : String) : String {
     var out = new StringBuilder()
-    var err = new StringBuilder()
     p4process(op)
          .withStdOutHandler(\ line -> out.append(line).append("\n"))
-         .withStdErrHandler(\ line -> err.append(line).append("\n"))
          .exec()
-    if (err.length() > 0) {
-      print("got stderr output:")
-      print(err)
-    }
     return out.toString()
+  }
+
+  override function runUntil(op : String, accept(line : String) : boolean) : String {
+    var foundLine : String
+    p4process(op)
+         .withStdOutHandler(\ line -> { if (foundLine == null && accept(line)) foundLine = line })
+         .exec()
+    return foundLine
+  }
+
+  override function exec(op : String) {
+    p4process(op).exec()
+  }
+
+  override function exec(op : String, handleStdOut(line : String)) {
+    p4process(op).withStdOutHandler(\ line -> handleStdOut(line)).exec()
   }
 
   override function run(op : String, handler : ProcessStarter.ProcessHandler) {

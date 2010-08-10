@@ -3,7 +3,6 @@ package gw.util.p4.base
 uses gw.test.TestClass
 uses java.io.File
 uses java.lang.System
-uses gw.util.ProcessStarter
 uses gw.util.Shell
 uses java.lang.Thread
 uses java.lang.Integer
