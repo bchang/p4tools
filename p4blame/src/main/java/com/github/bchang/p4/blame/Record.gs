@@ -7,8 +7,7 @@ class Record implements IP4BlameLine
 {
   var _fileLogEntry : FileLog.Entry as readonly LogEntry
   var _line : String as readonly Line
-  var _flag : boolean as FlaggedForInterest
-  var _origIdx : Integer as OrigIdx
+  var _idx : Integer as Idx
 
   property get Change() : int {
     return LogEntry.Change
