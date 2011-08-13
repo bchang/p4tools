@@ -10,6 +10,10 @@ class Record implements IP4BlameLine
   var _flag : boolean as FlaggedForInterest
   var _origIdx : Integer as OrigIdx
 
+  property get Change() : int {
+    return LogEntry.Change
+  }
+
   construct(lineArg : String) {
     _line = lineArg
   }

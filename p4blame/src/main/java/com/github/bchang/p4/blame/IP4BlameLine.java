@@ -9,5 +9,6 @@ package com.github.bchang.p4.blame;
  */
 public interface IP4BlameLine {
 
+  int getChange();
   String getLine();
 }

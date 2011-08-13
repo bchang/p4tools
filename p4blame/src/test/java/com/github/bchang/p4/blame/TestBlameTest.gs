@@ -31,49 +31,58 @@ class TestBlameTest extends AbstractP4Test {
 
     var blame = new P4Blame(P4)
     var testBlame = new TestBlame(blame)
-    testBlame.forPathNoStart(file.Path)
+    var lines = testBlame.forPathNoStart(file.Path)
     testBlame.start()
     Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {0, 1, 2})
+    assertEquals(change, lines[0].Change)
+    assertEquals(change, lines[1].Change)
+    assertEquals(change, lines[2].Change)
   }
 
   function testBlameForFileWithManyRevs() {
     var file = newUniqueFile()
-    var change = createFileAndSubmit(file,
+    var change1 = createFileAndSubmit(file,
         "1\n" +
         "1\n" +
         "1\n")
-    editFileAndSubmit(file,
+    var change2 = editFileAndSubmit(file,
         "1\n" +
         "2\n" +
         "2\n")
-    editFileAndSubmit(file,
+    var change3 = editFileAndSubmit(file,
         "1\n" +
         "2\n" +
         "3\n")
 
     var blame = new P4Blame(P4)
     var testBlame = new TestBlame(blame)
-    testBlame.forPathNoStart(file.Path)
+    var lines = testBlame.forPathNoStart(file.Path)
     testBlame.start()
     Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {2, 1, 0})
+    assertEquals(change1, lines[0].Change)
+    assertEquals(change2, lines[1].Change)
+    assertEquals(change3, lines[2].Change)
   }
 
   function testBlameForFileWithManyRevs2() {
     var file = newUniqueFile()
-    var change = createFileAndSubmit(file,
+    var change1 = createFileAndSubmit(file,
         "1\n")
-    editFileAndSubmit(file,
+    var change2 = editFileAndSubmit(file,
         "1\n" +
         "2\n")
-    editFileAndSubmit(file,
+    var change3 = editFileAndSubmit(file,
         "1\n" +
         "2\n" +
         "3\n")
 
     var blame = new P4Blame(P4)
     var testBlame = new TestBlame(blame)
-    testBlame.forPathNoStart(file.Path)
+    var lines = testBlame.forPathNoStart(file.Path)
     testBlame.start()
     Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {2, 1, 0})
+    assertEquals(change1, lines[0].Change)
+    assertEquals(change2, lines[1].Change)
+    assertEquals(change3, lines[2].Change)
   }
 }
