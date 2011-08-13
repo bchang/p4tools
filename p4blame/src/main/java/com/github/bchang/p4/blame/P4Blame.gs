@@ -131,7 +131,7 @@ class P4Blame implements IP4Blame
       }
 
       for (source in logEntry.Sources) {
-        backtrackIntoIntegSource(origWorkingList, source, logEntry, linesOfInterest, recursionDepth)
+        backtrackIntoIntegSource(origWorkingList.dup(), source, logEntry, linesOfInterest, recursionDepth)
       }
 
       if (isFirstRevisionForPath(logEntry)) {
@@ -145,8 +145,7 @@ class P4Blame implements IP4Blame
     }
   }
 
-  function backtrackIntoIntegSource(recordList : RecordList, sourceDetail : FileLog.Entry.Detail, logEntry : FileLog.Entry, linesOfInterest : HashSet<Integer>, recursionDepth : int) {
-    var forkedList = recordList.dup()
+  function backtrackIntoIntegSource(forkedList : RecordList, sourceDetail : FileLog.Entry.Detail, logEntry : FileLog.Entry, linesOfInterest : HashSet<Integer>, recursionDepth : int) {
     var sourcePathRev = sourceDetail.PathRev
     if (sourcePathRev typeis PathRange) {
       sourcePathRev = sourcePathRev.EndPathRev
