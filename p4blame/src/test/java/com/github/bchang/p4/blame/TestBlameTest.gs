@@ -33,7 +33,7 @@ class TestBlameTest extends AbstractP4Test {
     var testBlame = new TestBlame(blame)
     testBlame.forPathNoStart(file.Path)
     testBlame.start()
-    Assertions.assertThat(testBlame.Discoveries).containsExactly(new Integer[] {0, 1, 2})
+    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {0, 1, 2})
   }
 
   function testBlameForFileWithManyRevs() {
@@ -55,7 +55,7 @@ class TestBlameTest extends AbstractP4Test {
     var testBlame = new TestBlame(blame)
     testBlame.forPathNoStart(file.Path)
     testBlame.start()
-    Assertions.assertThat(testBlame.Discoveries).containsExactly(new Integer[] {2, 1, 0})
+    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {2, 1, 0})
   }
 
   function testBlameForFileWithManyRevs2() {
@@ -74,6 +74,6 @@ class TestBlameTest extends AbstractP4Test {
     var testBlame = new TestBlame(blame)
     testBlame.forPathNoStart(file.Path)
     testBlame.start()
-    Assertions.assertThat(testBlame.Discoveries).containsExactly(new Integer[] {2, 1, 0})
+    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {2, 1, 0})
   }
 }
