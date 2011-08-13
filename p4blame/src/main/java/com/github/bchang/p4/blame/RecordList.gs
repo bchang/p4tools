@@ -17,25 +17,13 @@ class RecordList implements List<Record>
     _title = title
     if (_title != null) {
       for (record in records index i) {
-        record.OrigIdx = i
+        record.Idx = i
       }
     }
   }
 
   final function dup() : RecordList {
     return new RecordList(null, _del.copy())
-  }
-
-  function flagAllLinesAsPotentiallyFromInteg() {
-    for (rec in _del) {
-      if (rec != null) rec.FlaggedForInterest = true
-    }
-  }
-
-  function resetAllFlags() {
-    for (rec in _del) {
-      if (rec != null) rec.FlaggedForInterest = false
-    }
   }
 
   function display() {

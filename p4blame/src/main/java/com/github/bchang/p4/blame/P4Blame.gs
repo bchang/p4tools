@@ -9,6 +9,7 @@ uses com.github.bchang.p4.base.PathRange
 uses com.github.bchang.p4.base.PathRev
 uses java.util.ArrayList
 uses java.util.Arrays
+uses java.util.HashSet
 uses java.util.Map
 uses java.lang.Integer
 uses gw.util.AutoMap
@@ -108,37 +109,35 @@ class P4Blame implements IP4Blame
         print("${indent(recursionDepth)}  " + logEntry.PathRev)
       }
 
-      workingList.resetAllFlags()
       var origWorkingList = workingList.dup()
+      var linesOfInterest = new HashSet<Integer>()
 
       if (isFirstRevisionForPath(logEntry)) {
-        workingList.flagAllLinesAsPotentiallyFromInteg()
+        for (rec in workingList index j) {
+          if (rec != null) {
+            linesOfInterest.add(j)
+          }
+        }
       }
       else {
         for (diffEntry in diff2(filelog[i].PathRev, filelog[i + 1].PathRev)) {
           // simulate the change (backwards)
           var removedRecs = backtrack(workingList, diffEntry)
           for (removedRec in removedRecs) {
-            removedRec.foundSourceRev(logEntry)
-            for (listener in _listeners) {
-              listener.lineDiscovered(removedRec.OrigIdx, removedRec)
-            }
-            removedRec.FlaggedForInterest = true
+            foundSourceRev(removedRec, logEntry)
+            linesOfInterest.add(removedRec.Idx)
           }
         }
       }
 
       for (source in logEntry.Sources) {
-        backtrackIntoIntegSource(origWorkingList.dup(), source, logEntry, recursionDepth)
+        backtrackIntoIntegSource(origWorkingList, source, logEntry, linesOfInterest, recursionDepth)
       }
 
       if (isFirstRevisionForPath(logEntry)) {
         for (rec in recordList) {
           if (rec != null and !rec.hasFoundSourceRev()) {
-            rec.foundSourceRev(logEntry)
-            for (listener in _listeners) {
-              listener.lineDiscovered(rec.OrigIdx, rec)
-            }
+            foundSourceRev(rec, logEntry)
           }
         }
         break
@@ -146,7 +145,7 @@ class P4Blame implements IP4Blame
     }
   }
 
-  function backtrackIntoIntegSource(recordList : RecordList, sourceDetail : FileLog.Entry.Detail, logEntry : FileLog.Entry, recursionDepth : int) {
+  function backtrackIntoIntegSource(recordList : RecordList, sourceDetail : FileLog.Entry.Detail, logEntry : FileLog.Entry, linesOfInterest : HashSet<Integer>, recursionDepth : int) {
     var forkedList = recordList.dup()
     var sourcePathRev = sourceDetail.PathRev
     if (sourcePathRev typeis PathRange) {
@@ -155,7 +154,7 @@ class P4Blame implements IP4Blame
 
     // mask unflagged lines, to be ignored when exploring the source branch
     for (rec in forkedList index i) {
-      if (rec != null and !rec.FlaggedForInterest) {
+      if (rec != null && !linesOfInterest.contains(i)) {
         forkedList.set(i, null)
       }
     }
@@ -186,6 +185,13 @@ class P4Blame implements IP4Blame
       }
     }
     return removedRecs
+  }
+
+  private function foundSourceRev(rec : Record, logEntry : FileLog.Entry) {
+    rec.foundSourceRev(logEntry)
+    for (listener in _listeners) {
+      listener.lineDiscovered(rec.Idx, rec)
+    }
   }
 
   private function isFirstRevisionForPath(logEntry : FileLog.Entry) : boolean {
