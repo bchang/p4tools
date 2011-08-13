@@ -1,6 +1,6 @@
-package gw.util.p4.tools.blame
+package com.github.bchang.p4.blame
 
-uses gw.util.p4.base.FileLog
+uses com.github.bchang.p4.base.FileLog
 
 class Record
 {

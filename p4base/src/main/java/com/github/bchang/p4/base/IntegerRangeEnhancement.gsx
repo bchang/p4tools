@@ -1,4 +1,4 @@
-package gw.util
+package com.github.bchang.p4.base
 
 uses gw.util.IntegerRange
 

@@ -1,4 +1,4 @@
-package gw.util.p4.base
+package com.github.bchang.p4.base
 
 class PathRev extends Path {
 
