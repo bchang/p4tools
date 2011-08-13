@@ -44,8 +44,8 @@ class FileLogImpl extends AbstractOperation implements FileLog {
     var entryMatcher = ENTRY_PAT.matcher(line)
     if (entryMatcher.matches()) {
       var entry = new EntryImpl() {
-        :PathRev = P4Factory.createPath("${_path.Path}#${entryMatcher.group(1) as int}") as PathRev,
-        :Change = entryMatcher.group(2) as int,
+        :PathRev = P4Factory.createPath("${_path.Path}#${entryMatcher.group(1).toInt()}") as PathRev,
+        :Change = entryMatcher.group(2).toInt(),
         :Op = entryMatcher.group(3),
         :Date = entryMatcher.group(4),
         :User = entryMatcher.group(5)
