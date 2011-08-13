@@ -12,6 +12,7 @@
   <modules>
     <module>p4base</module>
     <module>p4blame</module>
+    <module>p4test</module>
   </modules>
 
 </project>
