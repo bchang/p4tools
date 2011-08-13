@@ -1,25 +1,28 @@
 package com.github.bchang.p4.blame
 
-uses java.util.ArrayList
+uses com.github.bchang.p4.base.Diff2
+uses com.github.bchang.p4.base.FileLog
+uses com.github.bchang.p4.base.P4Client
 uses com.github.bchang.p4.base.P4Factory
 uses com.github.bchang.p4.base.Path
-uses com.github.bchang.p4.base.FileLog
-uses com.github.bchang.p4.base.Diff2
 uses com.github.bchang.p4.base.PathRange
-uses com.github.bchang.p4.base.P4Client
+uses com.github.bchang.p4.base.PathRev
+uses java.util.ArrayList
 uses java.util.Arrays
 uses java.util.Map
-uses com.github.bchang.p4.base.PathRev
 uses java.lang.Integer
 uses gw.util.AutoMap
 uses gw.util.Pair
 
 // need caching
 // better error handling for entry point, handle revs
-class P4Blame
+class P4Blame implements IP4Blame
 {
   var _p4 : P4Client
   var _logBacktracks : boolean as LogBacktracks = false
+  var _listeners = new ArrayList<IP4BlameListener>()
+  var _path : Path
+  var _recordList : RecordList
 
   var _filelogCache : Map<String, List<FileLog.Entry>> = {}
   var _diff2Cache = new AutoMap<Pair<Path, Path>, List<Diff2.Entry>>(\ pair -> {
@@ -34,26 +37,39 @@ class P4Blame
     _p4 = p4
   }
 
-  function forPath(pathStr : String) : RecordList {
-    var start = new java.util.Date().Time
+  override function addListener(listener : IP4BlameListener) {
+    _listeners.add(listener)
+  }
 
+  override function forPathNoStart(pathStr : String) : IP4BlameLine[] {
     var fstatDepotFile = _p4.fstat(pathStr)["depotFile"]
     if (fstatDepotFile == null) {
       throw "No such file in depot: ${pathStr}"
     }
-    var path = P4Factory.createPath(pathStr)
-    if (path typeis PathRev) {
-      path = P4Factory.createPath(fstatDepotFile, path.Rev)
+    _path = P4Factory.createPath(pathStr)
+    if (_path typeis PathRev) {
+      _path = P4Factory.createPath(fstatDepotFile, _path.Rev)
     }
     else {
-      path = P4Factory.createPath(fstatDepotFile)
+      _path = P4Factory.createPath(fstatDepotFile)
     }
-    var recordList = new RecordList(path as String, _p4.print(path).map( \ line -> new Record(line) ))
-    backtrackWithinPath(recordList, path, 0)
+    _recordList = new RecordList(_path as String, _p4.print(_path).map( \ line -> new Record(line) ))
+    return _recordList.toArray(new Record[_recordList.size()])
+  }
 
-    print("time elapsed: " + ((new java.util.Date().Time - start) / 1000) + " seconds")
+  override function start() {
+    backtrackWithinPath(_recordList, _path, 0)
+  }
 
-    return recordList
+  function forPath(pathStr : String) : RecordList {
+    var start = java.lang.System.nanoTime()
+
+    forPathNoStart(pathStr)
+    start()
+
+    print("time elapsed: " + ((java.lang.System.nanoTime() - start) / 1000 / 1000) + " ms")
+
+    return _recordList
   }
 
   private function filelog(pathrev : Path) : List<FileLog.Entry> {
