@@ -33,7 +33,7 @@ class Diff2Test extends AbstractP4Test {
     var fileA = newUniqueFile()
     var fileB = newUniqueFile()
     createFileAndSubmit(fileA, "A\nB\n")
-    createFileAndSubmit(fileB, "A\nB\n\X\n")
+    createFileAndSubmit(fileB, "A\nB\nX\n")
     var diff = P4.diff2(fileA.Path, fileB.Path)
     assertEquals(1, diff.Count)
     assertDiffEntry("a", 2, 2, 3, 3, {}, {"X"}, diff[0])

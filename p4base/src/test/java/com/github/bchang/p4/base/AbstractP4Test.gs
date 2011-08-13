@@ -20,21 +20,14 @@ abstract class AbstractP4Test extends TestClass {
   static var _p4 : P4Client as P4
   static var _uniqueFileCounter = 0
 
-  static var _fileMover : FileMover
-
   construct() {
-    this(new IntegDeleteFileMover(this))
-  }
-
-  construct(fileMover : FileMover) {
-    _fileMover = fileMover
   }
 
   override function beforeTestClass() {
     super.beforeTestClass()
 
     var serverHost = "localhost"
-    var serverPort = 99999 // nonprivileged port so it doesn't require root
+    var serverPort = 9999 // nonprivileged port so it doesn't require root
     var serverRoot = new File(_tmpDir, "server")
     var client = "P4TestClient"
 
@@ -173,14 +166,6 @@ abstract class AbstractP4Test extends TestClass {
     print(p4Impl("integ \"${fromDir.Path}/...\" \"${toDir.Path}/...\"").trim())
     print("Test resolving ${toDir.Path}/...")
     print(p4Impl("resolve -a \"${toDir.Path}/...\"").trim())
-  }
-
-  function moveFileAndSubmit(fromFile : File, toFile : File) : int {
-    return _fileMover.moveFileAndSubmit(fromFile, toFile)
-  }
-
-  function moveFile(fromFile : File, toFile : File) {
-    _fileMover.moveFile(fromFile, toFile)
   }
 
   function deleteFileAndSubmit(file : File) : int {

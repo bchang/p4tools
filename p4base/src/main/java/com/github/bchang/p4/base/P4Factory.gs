@@ -7,7 +7,7 @@ class P4Factory {
   static var PATH_PAT = Pattern.compile("([^#]+)(#(\\d+)(,#(\\d+))?)?")
 
   static function createP4() : P4Client {
-    return createP4(null, null, null, null)
+    return createP4(null, 0, null, null)
   }
 
   static function createP4(host : String, port : int, client : String, user : String) : P4Client {
@@ -29,10 +29,10 @@ class P4Factory {
       var rev = pathMatcher.group(3)
       var endRev = pathMatcher.group(5)
       if (endRev != null) {
-        return createPath(path, rev as int, endRev as int)
+        return createPath(path, rev.toInt(), endRev.toInt())
       }
       else if (rev != null) {
-        return createPath(path, rev as int)
+        return createPath(path, rev.toInt())
       }
       else {
         return new Path(path)
