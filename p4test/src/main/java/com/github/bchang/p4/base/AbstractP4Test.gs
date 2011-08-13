@@ -38,13 +38,8 @@ abstract class AbstractP4Test extends TestClass {
     try {
       Shell.exec("killall ${p4d.Name}")
 
-      // the following technique is shown here and commented out to show
-      // we should NOT do it this way.  It's too risky - with the wrong environment
-      // variables, you could accidentally shut down our production p4 server.
-
-      //Shell.buildProcess("p4 admin stop")
-      //  .withStdErrHandler(new ProcessStarter.NullOutputHandler())
-      //  .exec()
+      print("Waiting 1 second for daemon to die...")
+      Thread.sleep(1000)
     }
     catch (e : CommandFailedException) {
       // there wasn't a p4d process running - ignore
@@ -61,8 +56,9 @@ abstract class AbstractP4Test extends TestClass {
     process.Environment["P4ROOT"] = serverRoot.Path
     process.Environment["P4PORT"] = serverPort as String
     process.start()
-    print("Waiting 2 seconds for daemon to restart...")
-    Thread.sleep(2000)
+
+    print("Waiting 1 seconds for daemon to start...")
+    Thread.sleep(1000)
 
     // Create one client
     _p4 = P4Factory.createP4(serverHost, serverPort, client, null, true, true)
