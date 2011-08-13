@@ -17,9 +17,9 @@
       <type>pom</type>
     </dependency>
     <dependency>
-      <groupId>gw</groupId>
-      <artifactId>gosu-test-api</artifactId>
-      <version>0.8.6.1</version>
+      <groupId>com.github.bchang</groupId>
+      <artifactId>p4test</artifactId>
+      <version>1.0-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
