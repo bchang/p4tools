@@ -56,10 +56,10 @@ class Diff2Impl extends AbstractOperation implements Diff2 {
   private static function parseRange(range : String) : IntegerRange {
     if (range.contains(",")) {
       var split = range.split(",")
-      return new IntegerRange((split[0] as int), (split[1] as int))
+      return new IntegerRange((split[0].toInt()), (split[1].toInt()))
     }
     else {
-      return new IntegerRange((range as int), (range as int))
+      return new IntegerRange(range.toInt(), range.toInt())
     }
   }
 
