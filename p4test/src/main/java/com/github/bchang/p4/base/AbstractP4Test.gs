@@ -57,7 +57,7 @@ abstract class AbstractP4Test extends TestClass {
     process.Environment["P4PORT"] = serverPort as String
     process.start()
 
-    print("Waiting 1 seconds for daemon to start...")
+    print("Waiting 1 second for daemon to start...")
     Thread.sleep(1000)
 
     // Create one client
