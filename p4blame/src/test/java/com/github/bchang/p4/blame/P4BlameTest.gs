@@ -13,9 +13,9 @@ class P4BlameTest extends AbstractP4Test {
 
     var recordList = new P4Blame(P4).forPath(file.Path)
     assertEquals(3, recordList.Count)
-    assertRecord(change, "testuser", "//depot/${file.Name}#1", "1", recordList[0])
-    assertRecord(change, "testuser", "//depot/${file.Name}#1", "2", recordList[1])
-    assertRecord(change, "testuser", "//depot/${file.Name}#1", "3", recordList[2])
+    assertRecord(change, "testuser", "//depot/${file.Name}#1", "1", recordList.get(0))
+    assertRecord(change, "testuser", "//depot/${file.Name}#1", "2", recordList.get(1))
+    assertRecord(change, "testuser", "//depot/${file.Name}#1", "3", recordList.get(2))
   }
 
   function testBlameForFileWithTwoRevs() {
@@ -39,11 +39,11 @@ class P4BlameTest extends AbstractP4Test {
 
     var recordList = new P4Blame(P4).forPath(file.Path)
     assertEquals(5, recordList.Count)
-    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "2", recordList[0])
-    assertRecord(change2, "testuser2", "//depot/${file.Name}#2", "3a", recordList[1])
-    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "4", recordList[2])
-    assertRecord(change2, "testuser2", "//depot/${file.Name}#2", "a", recordList[3])
-    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "5", recordList[4])
+    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "2", recordList.get(0))
+    assertRecord(change2, "testuser2", "//depot/${file.Name}#2", "3a", recordList.get(1))
+    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "4", recordList.get(2))
+    assertRecord(change2, "testuser2", "//depot/${file.Name}#2", "a", recordList.get(3))
+    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "5", recordList.get(4))
   }
 
   function testBlameForFileHistoryAcrossIntegs() {
@@ -61,13 +61,13 @@ class P4BlameTest extends AbstractP4Test {
     /* var change2 = */ integFileAndSubmit(fileA, fileB)
     var recordList = new P4Blame(P4).forPath(fileB.Path)
     assertEquals(7, recordList.Count)
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "1", recordList[0])
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "2", recordList[1])
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "3", recordList[2])
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "4", recordList[3])
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "5", recordList[4])
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "6", recordList[5])
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "7", recordList[6])
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "1", recordList.get(0))
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "2", recordList.get(1))
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "3", recordList.get(2))
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "4", recordList.get(3))
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "5", recordList.get(4))
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "6", recordList.get(5))
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "7", recordList.get(6))
 
     var change3 = editFileAndSubmit(fileB,
         "1a\n" +
@@ -80,14 +80,14 @@ class P4BlameTest extends AbstractP4Test {
         "7\n")
     recordList = new P4Blame(P4).forPath(fileB.Path)
     assertEquals(8, recordList.Count)
-    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "1a", recordList[0])
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "2", recordList[1])
-    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "3a", recordList[2])
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "4", recordList[3])
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "5", recordList[4])
-    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "a", recordList[5])
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "6", recordList[6])
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "7", recordList[7])
+    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "1a", recordList.get(0))
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "2", recordList.get(1))
+    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "3a", recordList.get(2))
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "4", recordList.get(3))
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "5", recordList.get(4))
+    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "a", recordList.get(5))
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "6", recordList.get(6))
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "7", recordList.get(7))
 
     var change4 = editFileAndSubmit(fileA,
         "1\n" +
@@ -100,14 +100,14 @@ class P4BlameTest extends AbstractP4Test {
     /* var change5 = */ integFileAndSubmit(fileA, fileB)
     recordList = new P4Blame(P4).forPath(fileB.Path)
     assertEquals(8, recordList.Count)
-    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "1a", recordList[0])
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "2", recordList[1])
-    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "3a", recordList[2])
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "4", recordList[3])
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "5", recordList[4])
-    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "a", recordList[5])
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "6", recordList[6])
-    assertRecord(change4, "testuser", "//depot/${fileA.Name}#2", "7b", recordList[7])
+    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "1a", recordList.get(0))
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "2", recordList.get(1))
+    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "3a", recordList.get(2))
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "4", recordList.get(3))
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "5", recordList.get(4))
+    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "a", recordList.get(5))
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "6", recordList.get(6))
+    assertRecord(change4, "testuser", "//depot/${fileA.Name}#2", "7b", recordList.get(7))
 
     /* var change6 = */ integFileAndSubmit(fileB, fileA)
     var change7 = editFileAndSubmit(fileA,
@@ -141,14 +141,14 @@ class P4BlameTest extends AbstractP4Test {
         "7b\n")
     recordList = new P4Blame(P4).forPath(fileB.Path)
     assertEquals(8, recordList.Count)
-    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "1a", recordList[0])
-    assertRecord(change8, "testuser", "//depot/${fileA.Name}#5", "2b", recordList[1])
-    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "3a", recordList[2])
-    assertRecord(change7, "testuser", "//depot/${fileA.Name}#4", "4b", recordList[3])
-    assertRecord(change9, "testuser", "//depot/${fileB.Name}#4", "5a", recordList[4])
-    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "a", recordList[5])
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "6", recordList[6])
-    assertRecord(change4, "testuser", "//depot/${fileA.Name}#2", "7b", recordList[7])
+    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "1a", recordList.get(0))
+    assertRecord(change8, "testuser", "//depot/${fileA.Name}#5", "2b", recordList.get(1))
+    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "3a", recordList.get(2))
+    assertRecord(change7, "testuser", "//depot/${fileA.Name}#4", "4b", recordList.get(3))
+    assertRecord(change9, "testuser", "//depot/${fileB.Name}#4", "5a", recordList.get(4))
+    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "a", recordList.get(5))
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "6", recordList.get(6))
+    assertRecord(change4, "testuser", "//depot/${fileA.Name}#2", "7b", recordList.get(7))
   }
 
   public function testBlameForFileWhichIsRenamedAndThenRenamedBack() {
@@ -165,10 +165,10 @@ class P4BlameTest extends AbstractP4Test {
 
     var recordList = new P4Blame(P4).forPath(fileA.Path)
     assertEquals(4, recordList.Count)
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "A", recordList[0])
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "B", recordList[1])
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "C", recordList[2])
-    assertRecord(change3, "testuser", "//depot/${fileA.Name}#3", "D", recordList[3])
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "A", recordList.get(0))
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "B", recordList.get(1))
+    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "C", recordList.get(2))
+    assertRecord(change3, "testuser", "//depot/${fileA.Name}#3", "D", recordList.get(3))
   }
 
   public function testExceptionThrownWhenForFileNotInDepot() {
@@ -192,16 +192,16 @@ class P4BlameTest extends AbstractP4Test {
 
     var recordList = new P4Blame(P4).forPath(file.Path + "#1")
     assertEquals(3, recordList.Count)
-    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "A", recordList[0])
-    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "B", recordList[1])
-    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "C", recordList[2])
+    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "A", recordList.get(0))
+    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "B", recordList.get(1))
+    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "C", recordList.get(2))
 
     recordList = new P4Blame(P4).forPath(file.Path + "#2")
     assertEquals(4, recordList.Count)
-    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "A", recordList[0])
-    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "B", recordList[1])
-    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "C", recordList[2])
-    assertRecord(change2, "testuser", "//depot/${file.Name}#2", "D", recordList[3])
+    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "A", recordList.get(0))
+    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "B", recordList.get(1))
+    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "C", recordList.get(2))
+    assertRecord(change2, "testuser", "//depot/${file.Name}#2", "D", recordList.get(3))
   }
 
   private function assertRecord(change : int, user : String, path : String, line : String, rec : Record) {
