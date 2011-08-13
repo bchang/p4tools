@@ -12,6 +12,9 @@ import junit.framework.Test;
  */
 public class P4BlameSuite extends Suite {
   public static Test suite() {
+    if (System.getProperty("testclass") != null) {
+      return new P4BlameSuite().withTest(System.getProperty("testclass"));
+    }
     return new P4BlameSuite().withPackages("com.github.bchang.p4.blame");
   }
 }
