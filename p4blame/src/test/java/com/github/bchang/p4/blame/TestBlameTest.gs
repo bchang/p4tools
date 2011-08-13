@@ -57,4 +57,23 @@ class TestBlameTest extends AbstractP4Test {
     testBlame.start()
     Assertions.assertThat(testBlame.Discoveries).containsExactly(new Integer[] {2, 1, 0})
   }
+
+  function testBlameForFileWithManyRevs2() {
+    var file = newUniqueFile()
+    var change = createFileAndSubmit(file,
+        "1\n")
+    editFileAndSubmit(file,
+        "1\n" +
+        "2\n")
+    editFileAndSubmit(file,
+        "1\n" +
+        "2\n" +
+        "3\n")
+
+    var blame = new P4Blame(P4)
+    var testBlame = new TestBlame(blame)
+    testBlame.forPathNoStart(file.Path)
+    testBlame.start()
+    Assertions.assertThat(testBlame.Discoveries).containsExactly(new Integer[] {2, 1, 0})
+  }
 }
