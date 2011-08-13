@@ -16,6 +16,12 @@
       <version>0.8.6.1</version>
       <type>pom</type>
     </dependency>
+    <dependency>
+      <groupId>gw</groupId>
+      <artifactId>gosu-test-api</artifactId>
+      <version>0.8.6.1</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 </project>
