@@ -22,6 +22,7 @@
     <orderEntry type="library" name="Maven: jline:jline:0.9.94" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: gw:gosu-core:0.8.6.1" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: gw:native-library-marker:0" level="project" />
+    <orderEntry type="module" module-name="p4test" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.5" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: gw:gosu-test-api:0.8.6.1" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.easytesting:fest-assert:1.4" level="project" />
