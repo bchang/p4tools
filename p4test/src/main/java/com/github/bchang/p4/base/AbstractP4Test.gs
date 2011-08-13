@@ -20,9 +20,7 @@ abstract class AbstractP4Test extends TestClass {
   construct() {
   }
 
-  override function beforeTestClass() {
-    super.beforeTestClass()
-
+  function createP4() {
     var p4dPath = java.lang.System.getenv()["P4D"]
     if (p4dPath == null) {
       throw "please set an environment variable P4D pointing to your p4d executable"
@@ -63,6 +61,19 @@ abstract class AbstractP4Test extends TestClass {
     // Create one client
     _p4 = P4Factory.createP4(serverHost, serverPort, client, null, true, true)
     _clientRoot.mkdirs()
+  }
+
+  function teardownP4() {
+  }
+
+  override function beforeTestClass() {
+    super.beforeTestClass()
+    createP4()
+  }
+
+  override function afterTestClass() {
+    teardownP4()
+    super.afterTestClass()
   }
 
   override function beforeTestMethod() {
