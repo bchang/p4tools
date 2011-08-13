@@ -1,7 +1,7 @@
-package gw.util.p4.base.impl
-uses gw.util.p4.base.Fstat
+package com.github.bchang.p4.base.impl
+uses com.github.bchang.p4.base.Fstat
 uses java.util.Map
-uses gw.util.p4.base.Path
+uses com.github.bchang.p4.base.Path
 uses java.util.regex.Pattern
 
 class FstatImpl extends AbstractOperation implements Fstat {
