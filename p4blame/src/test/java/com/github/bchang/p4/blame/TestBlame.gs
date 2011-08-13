@@ -7,7 +7,7 @@ class TestBlame implements IP4BlameListener {
 
   var _blame : IP4Blame
   var _lines : IP4BlameLine[]
-  var _discoveries : ArrayList<Integer> as Discoveries = new ArrayList<Integer>()
+  var _discoveries : ArrayList<Integer> as DiscoverySequenceByIndex = new ArrayList<Integer>()
 
   construct(blame : IP4Blame) {
     _blame = blame
