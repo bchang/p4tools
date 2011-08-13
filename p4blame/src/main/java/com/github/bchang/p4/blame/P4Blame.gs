@@ -130,7 +130,14 @@ class P4Blame implements IP4Blame
       }
 
       if (isFirstRevisionForPath(logEntry)) {
-        recordList.setAllPendingRecords(logEntry)
+        for (rec in recordList) {
+          if (rec != null and !rec.hasFoundSourceRev()) {
+            rec.foundSourceRev(logEntry)
+            for (listener in _listeners) {
+              listener.lineDiscovered(rec.OrigIdx, rec)
+            }
+          }
+        }
         break
       }
     }
