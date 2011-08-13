@@ -14,6 +14,7 @@ abstract class AbstractP4Test extends TestClass {
 
   static var _tmpDir = new File(System.getProperty("java.io.tmpdir"), "p4test")
   static var _clientRoot = new File(_tmpDir, "client")
+  static var _p4d : File
   static var _p4 : P4Client as P4
   static var _uniqueFileCounter = 0
 
@@ -27,42 +28,62 @@ abstract class AbstractP4Test extends TestClass {
     if (p4dPath == null) {
       throw "please set an environment variable P4D pointing to your p4d executable"
     }
-    var p4d = new File(p4dPath)
+    _p4d = new File(p4dPath)
+
+    tryToKillP4D(false)
 
     var serverHost = "localhost"
     var serverPort = 9999 // nonprivileged port so it doesn't require root
     var serverRoot = new File(_tmpDir, "server")
     var client = "P4TestClient"
 
+    // Start server
+    serverRoot.mkdirs()
+    var process = Shell.buildProcess("${_p4d} -d")
+    process.Environment["P4ROOT"] = serverRoot.Path
+    process.Environment["P4PORT"] = serverPort as String
+    process.start()
+
+    // Create one client
+    _p4 = P4Factory.createP4(serverHost, serverPort, client, null, true, true)
+    _clientRoot.mkdirs()
+
+    for (i in 0..9) {
+      try {
+        if (_p4.run("info").contains("Server uptime")) {
+          return
+        }
+      } catch (e : CommandFailedException) {
+      }
+      print("Waiting for p4d to start...")
+      Thread.sleep(300)
+    }
+    fail("p4d never started")
+  }
+
+  override function afterTestClass() {
+    tryToKillP4D(true)
+  }
+
+  private function tryToKillP4D(failIfNoKill : boolean) {
     // Kill any previously running server
     try {
-      Shell.exec("killall ${p4d.Name}")
+      Shell.exec("killall ${_p4d.Name}")
 
       print("Waiting 1 second for daemon to die...")
       Thread.sleep(1000)
     }
     catch (e : CommandFailedException) {
-      // there wasn't a p4d process running - ignore
+      if (failIfNoKill) {
+        throw e
+      }
+      // else ignore that there wasn't a p4d process running
     }
 
     _tmpDir.deleteRecursively()
     if (_tmpDir.exists()) {
       throw "did not successfully delete ${_tmpDir}"
     }
-
-    // Start server
-    serverRoot.mkdirs()
-    var process = Shell.buildProcess("${p4d} -d")
-    process.Environment["P4ROOT"] = serverRoot.Path
-    process.Environment["P4PORT"] = serverPort as String
-    process.start()
-
-    print("Waiting 1 second for daemon to start...")
-    Thread.sleep(1000)
-
-    // Create one client
-    _p4 = P4Factory.createP4(serverHost, serverPort, client, null, true, true)
-    _clientRoot.mkdirs()
   }
 
   override function beforeTestMethod() {
