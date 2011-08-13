@@ -168,6 +168,17 @@ abstract class AbstractP4Test extends TestClass {
     print(p4Impl("resolve -a \"${toDir.Path}/...\"").trim())
   }
 
+  function moveFileAndSubmit(fromFile : File, toFile : File) : int {
+    moveFile(fromFile, toFile)
+    return submit({fromFile, toFile}, "test moved file")
+  }
+
+  function moveFile(fromFile : File, toFile : File) {
+    print("Test moving ${fromFile.Path} to ${toFile.Path}")
+    print(p4Impl("edit \"${fromFile.Path}\""))
+    print(p4Impl("move \"${fromFile.Path}/...\" \"${toFile.Path}/...\"").trim())
+  }
+
   function deleteFileAndSubmit(file : File) : int {
     deleteFile(file)
     return submit({file}, "test deleted file")

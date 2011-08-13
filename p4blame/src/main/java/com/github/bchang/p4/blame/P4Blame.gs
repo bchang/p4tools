@@ -130,7 +130,7 @@ class P4Blame
     // mask unflagged lines, to be ignored when exploring the source branch
     for (rec in forkedList index i) {
       if (rec != null and !rec.FlaggedForInterest) {
-        forkedList[i] = null
+        forkedList.set(i, null)
       }
     }
 

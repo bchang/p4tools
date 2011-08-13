@@ -147,7 +147,6 @@ class P4ClientImpl implements P4Client {
     var process = Shell.buildProcess(cmd)
     if (_host != null) {
       process.Environment["P4HOST"] = _host
-      print("****" + _host)
     }
     if (_port != null && _port != 0) {
       process.Environment["P4PORT"] = _port as String
