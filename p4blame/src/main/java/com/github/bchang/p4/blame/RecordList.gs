@@ -15,6 +15,11 @@ class RecordList implements List<Record>
   construct(title : String, records : List<Record>) {
     _del = records
     _title = title
+    if (_title != null) {
+      for (record in records index i) {
+        record.OrigIdx = i
+      }
+    }
   }
 
   final function dup() : RecordList {
@@ -92,13 +97,5 @@ class RecordList implements List<Record>
       }
     }
     return true
-  }
-
-  function setAllPendingRecords(logEntry : FileLog.Entry) {
-    for (rec in this) {
-      if (rec != null and !rec.hasFoundSourceRev()) {
-        rec.foundSourceRev(logEntry)
-      }
-    }
   }
 }

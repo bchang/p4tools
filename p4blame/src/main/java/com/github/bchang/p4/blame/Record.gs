@@ -1,12 +1,14 @@
 package com.github.bchang.p4.blame
 
 uses com.github.bchang.p4.base.FileLog
+uses java.lang.Integer
 
 class Record implements IP4BlameLine
 {
   var _fileLogEntry : FileLog.Entry as readonly LogEntry
   var _line : String as readonly Line
   var _flag : boolean as FlaggedForInterest
+  var _origIdx : Integer as OrigIdx
 
   construct(lineArg : String) {
     _line = lineArg

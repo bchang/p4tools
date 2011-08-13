@@ -1,6 +1,8 @@
 package com.github.bchang.p4.blame
 
 uses com.github.bchang.p4.base.AbstractP4Test
+uses java.lang.Integer
+uses org.fest.assertions.Assertions
 
 class TestBlameTest extends AbstractP4Test {
 
@@ -18,5 +20,7 @@ class TestBlameTest extends AbstractP4Test {
     assertEquals("1", lines[0].Line)
     assertEquals("2", lines[1].Line)
     assertEquals("3", lines[2].Line)
+    testBlame.start()
+    Assertions.assertThat(testBlame.Discoveries).containsExactly(new Integer[] {0, 1, 2})
   }
 }
