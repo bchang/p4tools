@@ -12,9 +12,6 @@ uses java.lang.StringBuilder
 
 abstract class AbstractP4Test extends TestClass {
 
-  static final var P4D_NAME = "p4d-2009.2"
-  static final var P4D_LOCATION = "/opt/perforce"
-
   static var _tmpDir = new File(System.getProperty("java.io.tmpdir"), "p4test")
   static var _clientRoot = new File(_tmpDir, "client")
   static var _p4 : P4Client as P4
@@ -26,6 +23,12 @@ abstract class AbstractP4Test extends TestClass {
   override function beforeTestClass() {
     super.beforeTestClass()
 
+    var p4dPath = java.lang.System.getenv()["P4D"]
+    if (p4dPath == null) {
+      throw "please set an environment variable P4D pointing to your p4d executable"
+    }
+    var p4d = new File(p4dPath)
+
     var serverHost = "localhost"
     var serverPort = 9999 // nonprivileged port so it doesn't require root
     var serverRoot = new File(_tmpDir, "server")
@@ -33,7 +36,7 @@ abstract class AbstractP4Test extends TestClass {
 
     // Kill any previously running server
     try {
-      Shell.exec("killall ${P4D_NAME}")
+      Shell.exec("killall ${p4d.Name}")
 
       // the following technique is shown here and commented out to show
       // we should NOT do it this way.  It's too risky - with the wrong environment
@@ -54,7 +57,7 @@ abstract class AbstractP4Test extends TestClass {
 
     // Start server
     serverRoot.mkdirs()
-    var process = Shell.buildProcess("${P4D_LOCATION}/${P4D_NAME} -d")
+    var process = Shell.buildProcess("${p4d} -d")
     process.Environment["P4ROOT"] = serverRoot.Path
     process.Environment["P4PORT"] = serverPort as String
     process.start()
