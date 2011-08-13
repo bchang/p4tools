@@ -52,6 +52,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/p4base/p4base.iml" filepath="$PROJECT_DIR$/p4base/p4base.iml" />
       <module fileurl="file://$PROJECT_DIR$/p4blame/p4blame.iml" filepath="$PROJECT_DIR$/p4blame/p4blame.iml" />
+      <module fileurl="file://$PROJECT_DIR$/p4test/p4test.iml" filepath="$PROJECT_DIR$/p4test/p4test.iml" />
       <module fileurl="file://$PROJECT_DIR$/p4tools.iml" filepath="$PROJECT_DIR$/p4tools.iml" />
     </modules>
   </component>
