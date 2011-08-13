@@ -1,10 +1,10 @@
-package gw.util.p4.base.impl
-uses gw.util.p4.base.P4Client
-uses gw.util.p4.base.FileLog
-uses gw.util.p4.base.P4Factory
-uses gw.util.p4.base.Diff2
+package com.github.bchang.p4.base.impl
+uses com.github.bchang.p4.base.P4Client
+uses com.github.bchang.p4.base.FileLog
+uses com.github.bchang.p4.base.P4Factory
+uses com.github.bchang.p4.base.Diff2
 uses java.util.Map
-uses gw.util.p4.base.Path
+uses com.github.bchang.p4.base.Path
 uses gw.util.Shell
 uses java.lang.StringBuilder
 uses gw.util.ProcessStarter

@@ -1,5 +1,5 @@
-package gw.util.p4.base
-uses gw.util.p4.base.impl.P4ClientImpl
+package com.github.bchang.p4.base
+uses com.github.bchang.p4.base.impl.P4ClientImpl
 uses java.util.regex.Pattern
 
 class P4Factory {

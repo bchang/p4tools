@@ -1,15 +1,15 @@
-package gw.util.p4.tools.blame
+package com.github.bchang.p4.blame
 
 uses java.util.ArrayList
-uses gw.util.p4.base.P4Factory
-uses gw.util.p4.base.Path
-uses gw.util.p4.base.FileLog
-uses gw.util.p4.base.Diff2
-uses gw.util.p4.base.PathRange
-uses gw.util.p4.base.P4Client
+uses com.github.bchang.p4.base.P4Factory
+uses com.github.bchang.p4.base.Path
+uses com.github.bchang.p4.base.FileLog
+uses com.github.bchang.p4.base.Diff2
+uses com.github.bchang.p4.base.PathRange
+uses com.github.bchang.p4.base.P4Client
 uses java.util.Arrays
 uses java.util.Map
-uses gw.util.p4.base.PathRev
+uses com.github.bchang.p4.base.PathRev
 uses java.lang.Integer
 uses gw.util.AutoMap
 uses gw.util.Pair

@@ -1,4 +1,4 @@
-package gw.util.p4.base.impl
+package com.github.bchang.p4.base.impl
 
 abstract class AbstractOperation {
 

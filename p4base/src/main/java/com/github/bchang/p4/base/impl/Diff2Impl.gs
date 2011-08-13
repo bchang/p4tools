@@ -1,8 +1,8 @@
-package gw.util.p4.base.impl
+package com.github.bchang.p4.base.impl
 uses gw.util.IntegerRange
-uses gw.util.p4.base.Diff2
-uses gw.util.p4.base.Path
-uses gw.util.p4.base.PathRange
+uses com.github.bchang.p4.base.Diff2
+uses com.github.bchang.p4.base.Path
+uses com.github.bchang.p4.base.PathRange
 uses java.util.regex.Pattern
 uses java.util.ArrayList
 uses java.util.List

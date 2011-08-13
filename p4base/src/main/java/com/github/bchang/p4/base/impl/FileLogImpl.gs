@@ -1,10 +1,10 @@
-package gw.util.p4.base.impl
-uses gw.util.p4.base.FileLog
-uses gw.util.p4.base.PathRange
-uses gw.util.p4.base.Path
+package com.github.bchang.p4.base.impl
+uses com.github.bchang.p4.base.FileLog
+uses com.github.bchang.p4.base.PathRange
+uses com.github.bchang.p4.base.Path
 uses java.util.regex.Pattern
-uses gw.util.p4.base.PathRev
-uses gw.util.p4.base.P4Factory
+uses com.github.bchang.p4.base.PathRev
+uses com.github.bchang.p4.base.P4Factory
 uses java.util.List
 
 class FileLogImpl extends AbstractOperation implements FileLog {

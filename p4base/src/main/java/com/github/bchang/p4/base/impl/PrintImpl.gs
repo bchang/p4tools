@@ -1,6 +1,6 @@
-package gw.util.p4.base.impl
-uses gw.util.p4.base.Print
-uses gw.util.p4.base.Path
+package com.github.bchang.p4.base.impl
+uses com.github.bchang.p4.base.Print
+uses com.github.bchang.p4.base.Path
 
 class PrintImpl extends AbstractOperation implements Print {
 
