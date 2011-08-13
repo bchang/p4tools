@@ -120,6 +120,9 @@ class P4Blame implements IP4Blame
           var removedRecs = backtrack(workingList, diffEntry)
           for (removedRec in removedRecs) {
             removedRec.foundSourceRev(logEntry)
+            for (listener in _listeners) {
+              listener.lineDiscovered(removedRec.OrigIdx, removedRec)
+            }
             removedRec.FlaggedForInterest = true
           }
         }
