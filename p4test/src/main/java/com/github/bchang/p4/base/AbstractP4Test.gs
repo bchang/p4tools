@@ -59,7 +59,7 @@ abstract class AbstractP4Test extends TestClass {
     fail("p4d never started")
   }
 
-  override function afterTestClass() {
+  function teardownP4() {
     tryToKillP4D(true)
   }
 
@@ -82,9 +82,6 @@ abstract class AbstractP4Test extends TestClass {
     if (_tmpDir.exists()) {
       throw "did not successfully delete ${_tmpDir}"
     }
-  }
-
-  function teardownP4() {
   }
 
   override function beforeTestClass() {
