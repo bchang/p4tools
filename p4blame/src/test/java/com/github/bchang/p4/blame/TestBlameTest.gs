@@ -85,4 +85,28 @@ class TestBlameTest extends AbstractP4Test {
     assertEquals(change2, lines[1].Change)
     assertEquals(change3, lines[2].Change)
   }
+
+  function testBlameForFileAcrossBranches() {
+    var fileA = newUniqueFile()
+    var fileB = newUniqueFile()
+    var change1 = createFileAndSubmit(fileA,
+        "1\n" +
+        "2\n" +
+        "3\n")
+    /* var change2 = */ integFileAndSubmit(fileA, fileB)
+    var change3 = editFileAndSubmit(fileB,
+        "a\n" +
+        "2\n" +
+        "c\n")
+    /* var change4 = */ integFileAndSubmit(fileB, fileA)
+
+    var blame = new P4Blame(P4)
+    var testBlame = new TestBlame(blame)
+    var lines = testBlame.forPathNoStart(fileA.Path)
+    testBlame.start()
+    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {0, 2, 1})
+    assertEquals(change3, lines[0].Change)
+    assertEquals(change1, lines[1].Change)
+    assertEquals(change3, lines[2].Change)
+  }
 }
