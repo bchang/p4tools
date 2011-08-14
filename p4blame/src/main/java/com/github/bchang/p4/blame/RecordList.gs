@@ -75,7 +75,7 @@ class RecordList implements List<Record>
 
   function isComplete() : boolean {
     for (rec in this) {
-      if (rec != null and !rec.hasFoundSourceRev()) {
+      if (rec != null and rec.LogEntry == null) {
         return false
       }
     }

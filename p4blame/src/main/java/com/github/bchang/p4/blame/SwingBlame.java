@@ -22,10 +22,7 @@ public class SwingBlame implements IP4BlameListener {
     _blame.start();
   }
 
-  public void lineDiscovered(int idx, IP4BlameLine line) {
-    _lines[idx] = line;
-  }
-
-  public void blameDone() {
+  public void lineDiscovered(IP4BlameLine line) {
+    _lines[line.getId()] = line;
   }
 }

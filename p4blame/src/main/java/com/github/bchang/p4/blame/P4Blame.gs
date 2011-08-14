@@ -126,10 +126,7 @@ class P4Blame implements IP4Blame
       else {
         for (diffEntry in diff2(filelog[i].PathRev, filelog[i + 1].PathRev)) {
           // simulate the change (backwards)
-          var removedRecs = backtrack(workingList, diffEntry)
-          for (removedRec in removedRecs) {
-            recordsChangedWithinPath.add(removedRec)
-          }
+          recordsChangedWithinPath.addAll(backtrack(workingList, diffEntry))
         }
       }
 
@@ -138,9 +135,9 @@ class P4Blame implements IP4Blame
       }
 
       for (rec in recordsChangedWithinPath) {
-        rec.foundSourceRev(logEntry)
+        rec.discovered(logEntry)
         for (listener in _listeners) {
-          listener.lineDiscovered(rec.Id, rec)
+          listener.lineDiscovered(rec)
         }
       }
     }
