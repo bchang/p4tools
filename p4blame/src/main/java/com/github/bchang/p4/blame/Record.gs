@@ -17,6 +17,10 @@ class Record implements IP4BlameLine
     return LogEntry.User
   }
 
+  property get Date() : String {
+    return LogEntry.Date
+  }
+
   construct(lineArg : String, i : int) {
     _line = lineArg
     _id = i

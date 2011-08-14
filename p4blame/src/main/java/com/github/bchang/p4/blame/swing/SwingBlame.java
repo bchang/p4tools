@@ -63,7 +63,8 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
     _table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
     _table.getColumnModel().getColumn(0).setMaxWidth(100);
     _table.getColumnModel().getColumn(1).setMaxWidth(100);
-    _table.getColumnModel().getColumn(2).setMaxWidth(50);
+    _table.getColumnModel().getColumn(2).setMaxWidth(100);
+    _table.getColumnModel().getColumn(3).setMaxWidth(40);
     JScrollPane scrollPane = new JScrollPane(_table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     _scrollBar = new JScrollBar();
     _scrollBarUI = new BlameScrollBarUI();
@@ -93,6 +94,7 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
         _scrollBar.repaint();
         _lines._changes[line.getId()] = line.getChange();
         _lines._users[line.getId()] = line.getUser();
+        _lines._dates[line.getId()] = line.getDate();
         _lines.fireTableRowsUpdated(line.getId(), line.getId());
         _table.repaint();
       }
@@ -197,6 +199,7 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
   class BlameTableModel extends AbstractTableModel {
     Integer[] _changes;
     String[] _users;
+    String[] _dates;
     String[] _lines = new String[0];
 
     void setLines(IP4BlameLine[] lines) {
@@ -206,6 +209,7 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
       }
       _changes = new Integer[lines.length];
       _users = new String[lines.length];
+      _dates = new String[lines.length];
     }
 
     public int getRowCount() {
@@ -213,7 +217,7 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
     }
 
     public int getColumnCount() {
-      return 4;
+      return 5;
     }
 
     public String getColumnName(int columnIndex) {
@@ -221,10 +225,12 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
       case 0:
         return "User";
       case 1:
-        return "Change";
+        return "Date";
       case 2:
-        return "Line";
+        return "Change";
       case 3:
+        return "Line";
+      case 4:
         return "";
       default:
         return null;
@@ -236,10 +242,12 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
       case 0:
         return String.class;
       case 1:
-        return Integer.class;
+        return String.class;
       case 2:
         return Integer.class;
       case 3:
+        return Integer.class;
+      case 4:
         return String.class;
       default:
         return null;
@@ -251,10 +259,12 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
       case 0:
         return _users[rowIndex];
       case 1:
-        return _changes[rowIndex];
+        return _dates[rowIndex];
       case 2:
-        return rowIndex;
+        return _changes[rowIndex];
       case 3:
+        return rowIndex;
+      case 4:
         return _lines[rowIndex];
       default:
         return null;
