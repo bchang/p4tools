@@ -219,9 +219,9 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
     public String getColumnName(int columnIndex) {
       switch (columnIndex) {
       case 0:
-        return "Change";
-      case 1:
         return "User";
+      case 1:
+        return "Change";
       case 2:
         return "Line";
       case 3:
@@ -234,9 +234,9 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
     public Class<?> getColumnClass(int columnIndex) {
       switch (columnIndex) {
       case 0:
-        return Integer.class;
-      case 1:
         return String.class;
+      case 1:
+        return Integer.class;
       case 2:
         return Integer.class;
       case 3:
@@ -249,9 +249,9 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
     public Object getValueAt(int rowIndex, int columnIndex) {
       switch (columnIndex) {
       case 0:
-        return _changes[rowIndex];
-      case 1:
         return _users[rowIndex];
+      case 1:
+        return _changes[rowIndex];
       case 2:
         return rowIndex;
       case 3:
