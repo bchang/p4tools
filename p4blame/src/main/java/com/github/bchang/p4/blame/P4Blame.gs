@@ -54,7 +54,11 @@ class P4Blame implements IP4Blame
     else {
       _path = P4Factory.createPath(fstatDepotFile)
     }
-    _recordList = new RecordList(_path as String, _p4.print(_path).map( \ line -> new Record(line) ))
+    var records = new ArrayList<Record>()
+    for (line in _p4.print(_path) index i) {
+      records.add(new Record(line, i))
+    }
+    _recordList = new RecordList(_path as String, records)
     return _recordList.toArray(new Record[_recordList.size()])
   }
 
@@ -110,12 +114,12 @@ class P4Blame implements IP4Blame
       }
 
       var origWorkingList = workingList.dup()
-      var linesOfInterest = new HashSet<Integer>()
+      var recordsChangedWithinPath = new HashSet<Record>()
 
       if (isFirstRevisionForPath(logEntry)) {
-        for (rec in workingList index j) {
+        for (rec in workingList) {
           if (rec != null) {
-            linesOfInterest.add(j)
+            recordsChangedWithinPath.add(rec)
           }
         }
       }
@@ -124,28 +128,25 @@ class P4Blame implements IP4Blame
           // simulate the change (backwards)
           var removedRecs = backtrack(workingList, diffEntry)
           for (removedRec in removedRecs) {
-            foundSourceRev(removedRec, logEntry)
-            linesOfInterest.add(removedRec.Idx)
+            recordsChangedWithinPath.add(removedRec)
           }
         }
       }
 
       for (source in logEntry.Sources) {
-        backtrackIntoIntegSource(origWorkingList.dup(), source, logEntry, linesOfInterest, recursionDepth)
+        backtrackIntoIntegSource(origWorkingList.dup(), source, logEntry, recordsChangedWithinPath, recursionDepth)
       }
 
-      if (isFirstRevisionForPath(logEntry)) {
-        for (rec in recordList) {
-          if (rec != null and !rec.hasFoundSourceRev()) {
-            foundSourceRev(rec, logEntry)
-          }
+      for (rec in recordsChangedWithinPath) {
+        rec.foundSourceRev(logEntry)
+        for (listener in _listeners) {
+          listener.lineDiscovered(rec.Id, rec)
         }
-        break
       }
     }
   }
 
-  function backtrackIntoIntegSource(forkedList : RecordList, sourceDetail : FileLog.Entry.Detail, logEntry : FileLog.Entry, linesOfInterest : HashSet<Integer>, recursionDepth : int) {
+  function backtrackIntoIntegSource(forkedList : RecordList, sourceDetail : FileLog.Entry.Detail, logEntry : FileLog.Entry, recordsChangedWithinPath : HashSet<Record>, recursionDepth : int) {
     var sourcePathRev = sourceDetail.PathRev
     if (sourcePathRev typeis PathRange) {
       sourcePathRev = sourcePathRev.EndPathRev
@@ -153,7 +154,7 @@ class P4Blame implements IP4Blame
 
     // mask unflagged lines, to be ignored when exploring the source branch
     for (rec in forkedList index i) {
-      if (rec != null && !linesOfInterest.contains(i)) {
+      if (rec != null && !recordsChangedWithinPath.contains(rec)) {
         forkedList.set(i, null)
       }
     }
@@ -161,9 +162,9 @@ class P4Blame implements IP4Blame
     for (diffEntry in diff2(logEntry.PathRev, sourcePathRev)) {
       backtrack(forkedList, diffEntry)
     }
-    for (rec in forkedList index i) {
+    for (rec in forkedList) {
       if (rec != null) {
-        rec.resetSourceRev()
+        recordsChangedWithinPath.remove(rec)
       }
     }
     backtrackWithinPath( forkedList, sourcePathRev, recursionDepth + 1 )
@@ -184,13 +185,6 @@ class P4Blame implements IP4Blame
       }
     }
     return removedRecs
-  }
-
-  private function foundSourceRev(rec : Record, logEntry : FileLog.Entry) {
-    rec.foundSourceRev(logEntry)
-    for (listener in _listeners) {
-      listener.lineDiscovered(rec.Idx, rec)
-    }
   }
 
   private function isFirstRevisionForPath(logEntry : FileLog.Entry) : boolean {

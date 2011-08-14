@@ -7,14 +7,15 @@ class Record implements IP4BlameLine
 {
   var _fileLogEntry : FileLog.Entry as readonly LogEntry
   var _line : String as readonly Line
-  var _idx : Integer as Idx
+  var _id : Integer as Id
 
   property get Change() : int {
     return LogEntry.Change
   }
 
-  construct(lineArg : String) {
+  construct(lineArg : String, i : int) {
     _line = lineArg
+    _id = i
   }
 
   function foundSourceRev(entry : FileLog.Entry) {
@@ -31,5 +32,13 @@ class Record implements IP4BlameLine
 
   override function toString() : String {
     return _line
+  }
+
+  override function hashCode() : int {
+    return _id.hashCode()
+  }
+
+  override function equals(o : Object) : boolean {
+    return _id.equals((o as Record).Id)
   }
 }

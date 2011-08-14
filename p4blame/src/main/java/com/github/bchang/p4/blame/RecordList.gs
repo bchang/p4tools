@@ -15,11 +15,6 @@ class RecordList implements List<Record>
   construct(title : String, records : List<Record>) {
     _del = records
     _title = title
-    if (_title != null) {
-      for (record in records index i) {
-        record.Idx = i
-      }
-    }
   }
 
   final function dup() : RecordList {
