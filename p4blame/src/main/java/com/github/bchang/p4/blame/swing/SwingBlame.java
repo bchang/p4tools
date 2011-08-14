@@ -17,16 +17,19 @@ import java.awt.event.WindowEvent;
  */
 public class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
 
+  private final Object _lock = new Object();
   public static final Color COLOR_BLOCK_HIGHLIGHT = new Color(114, 153, 191);
   public static final Color COLOR_BLOCK = new Color(153, 204, 255);
   public static final Color COLOR_BLOCK_SHADOW = new Color(218, 255, 255);
   private final IP4Blame _blame;
   private BlameTableModel _lines;
   private JTextField _pathField;
+  private JButton _goButton;
   private JTable _table;
   private JScrollBar _scrollBar;
   private BlameScrollBarUI _scrollBarUI;
   private Thread _blameThread;
+  private int _numDiscovered;
 
   public SwingBlame(IP4Blame blame) {
     super();
@@ -43,9 +46,15 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
   public void go(String path) {
     this.setSize(800, 600);
     this.setLayout(new BorderLayout());
+    JPanel topPanel = new JPanel();
+    topPanel.setLayout(new BorderLayout());
     _pathField = new JTextField(path);
-    this.add(_pathField, BorderLayout.NORTH);
     _pathField.addActionListener(this);
+    topPanel.add(_pathField, BorderLayout.CENTER);
+    _goButton = new JButton("Go");
+    _goButton.addActionListener(this);
+    topPanel.add(_goButton, BorderLayout.EAST);
+    this.add(topPanel, BorderLayout.NORTH);
     _lines = new BlameTableModel();
     _table = new JTable(_lines);
     _table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
@@ -72,11 +81,24 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
         _table.repaint();
       }
     });
+    synchronized(_lock) {
+      if (++_numDiscovered == _lines.getRowCount()) {
+        EventQueue.invokeLater(new Runnable() {
+          public void run() {
+            blameFinished();
+          }
+        });
+      }
+    }
   }
 
   public void actionPerformed(ActionEvent evt) {
-    if (evt.getSource() == _pathField) {
+    if (evt.getSource() == _pathField || evt.getSource() == _goButton) {
       try {
+        synchronized(_lock) {
+          _numDiscovered = 0;
+        }
+        blameStarted();
         IP4BlameLine[] lines = _blame.forPathNoStart(_pathField.getText());
         _scrollBarUI.setLines(lines);
         _lines.setLines(lines);
@@ -95,6 +117,16 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
         JOptionPane.showMessageDialog(this, ex.getMessage());
       }
     }
+  }
+
+  private void blameStarted() {
+    _pathField.setEnabled(false);
+    _goButton.setEnabled(false);
+  }
+
+  private void blameFinished() {
+    _pathField.setEnabled(true);
+    _goButton.setEnabled(true);
   }
 
   class BlameScrollBarUI extends MetalScrollBarUI {
