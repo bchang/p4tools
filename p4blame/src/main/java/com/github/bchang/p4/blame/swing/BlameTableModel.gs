@@ -1,34 +1,36 @@
 package com.github.bchang.p4.blame.swing;
 
-import com.github.bchang.p4.blame.IP4ChangeInfo;
+uses com.github.bchang.p4.blame.IP4ChangeInfo
 
-import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
+uses gw.lang.reflect.java.IJavaType
+uses java.lang.*
+uses javax.swing.*
+uses javax.swing.table.AbstractTableModel
 
 /**
  */
 class BlameTableModel extends AbstractTableModel {
-  String[] _lines = new String[0];
-  private IP4ChangeInfo[] _changes;
+  var _lines = new String[0]
+  var _changes : IP4ChangeInfo[]
 
-  void setLines(String[] lines) {
+  function setLines(lines : String[]) {
     _lines = lines;
     _changes = new IP4ChangeInfo[lines.length];
   }
 
-  void setChangeInfo(int idx, IP4ChangeInfo change) {
+  function setChangeInfo(idx : int, change : IP4ChangeInfo) {
     _changes[idx] = change;
   }
 
-  public int getRowCount() {
+  override property get RowCount() : int {
     return _lines.length;
   }
 
-  public int getColumnCount() {
+  override property get ColumnCount() : int {
     return 5;
   }
 
-  public String getColumnName(int columnIndex) {
+  override function getColumnName(columnIndex : int) : String {
     switch (columnIndex) {
     case 0:
       return "User";
@@ -45,34 +47,34 @@ class BlameTableModel extends AbstractTableModel {
     }
   }
 
-  public Class<?> getColumnClass(int columnIndex) {
+  override function getColumnClass(columnIndex : int) : Class<?> {
     switch (columnIndex) {
     case 0:
-      return String.class;
+      return IJavaType.STRING.IntrinsicClass
     case 1:
-      return String.class;
+      return IJavaType.STRING.IntrinsicClass
     case 2:
-      return Integer.class;
+      return IJavaType.INTEGER.IntrinsicClass
     case 3:
-      return Integer.class;
+      return IJavaType.INTEGER.IntrinsicClass
     case 4:
-      return String.class;
+      return IJavaType.STRING.IntrinsicClass
     default:
       return null;
     }
   }
 
-  public Object getValueAt(int row, int col) {
-    IP4ChangeInfo change = _changes[row];
+  override function getValueAt(row : int, col : int) : Object {
+    var change = _changes[row]
     switch (col) {
     case 0:
       return change == null ? null : change.getUser();
     case 1:
       return change == null ? null : change.getDate();
     case 2:
-      return change == null ? null : change.getChange();
+      return change == null ? null : change.getChange() as String
     case 3:
-      return row;
+      return Integer.toString(row)
     case 4:
       return _lines[row];
     default:
@@ -80,24 +82,23 @@ class BlameTableModel extends AbstractTableModel {
     }
   }
 
-  public void maybeShowChangeInfo(JTable table, int row, int col) {
+  function maybeShowChangeInfo(table : JTable, row : int, col : int) {
     if (0 <= col && col <=2) {
-      IP4ChangeInfo change = _changes[row];
+      var change = _changes[row]
       if (change != null) {
-        table.setToolTipText(toHTML("Change " + change.getChange() +
-                " by " + change.getUser() + " on " + change.getDate() + "\n\n" +
-                change.getDescription()
-        ));
+        table.ToolTipText = toHTML("Change " + change.Change +
+                " by " + change.User + " on " + change.Date + "\n\n" +
+                change.Description)
       }
     } else {
-      table.setToolTipText(null);
+      table.ToolTipText = null
     }
   }
 
-  private String toHTML(String s) {
-    StringBuilder sb = new StringBuilder();
+  private function toHTML(s : String) : String {
+    var sb = new StringBuilder()
     sb.append("<html>");
-    for (char c : s.toCharArray()) {
+    for (c in s.toCharArray()) {
       switch (c) {
       case '>':
         sb.append("&gt;");

@@ -1,36 +1,35 @@
 package com.github.bchang.p4.blame.swing;
 
-import com.github.bchang.p4.blame.IP4BlameLine;
+uses com.github.bchang.p4.blame.IP4BlameLine
 
-import javax.swing.*;
-import javax.swing.plaf.metal.MetalScrollBarUI;
-import java.awt.*;
+uses javax.swing.*
+uses javax.swing.plaf.metal.MetalScrollBarUI
+uses java.awt.*
 
 /**
  */
 class BlameScrollBarUI extends MetalScrollBarUI {
-  public static final Color COLOR_BLOCK_HIGHLIGHT = new Color(114, 153, 191);
-  public static final Color COLOR_BLOCK = new Color(153, 204, 255);
-  public static final Color COLOR_BLOCK_SHADOW = new Color(218, 255, 255);
+  static var COLOR_BLOCK_HIGHLIGHT = new Color(114, 153, 191)
+  static var COLOR_BLOCK = new Color(153, 204, 255)
+  static var COLOR_BLOCK_SHADOW = new Color(218, 255, 255)
 
-  private boolean[] _lines = new boolean[0];
+  var _lines = new boolean[0]
 
-  void setLines(String[] lines) {
+  function setLines(lines : String[]) {
     _lines = new boolean[lines.length];
   }
 
-  void setLineFound(int idx) {
+  function setLineFound(idx : int) {
     _lines[idx] = true;
   }
 
-  @Override
-  protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
-    super.paintTrack(g, c, trackBounds);
+  override function paintTrack(g : Graphics, c : JComponent, bounds : Rectangle) {
+    super.paintTrack(g, c, bounds);
 
-    int blockStart = -1;
-    int blockEnd = -1;
-    for (int i = 0; i < _lines.length; i++) {
-      if (_lines[i]) {
+    var blockStart = -1
+    var blockEnd = -1
+    for (line in _lines index i) {
+      if (line) {
         if (blockStart < 0) {
           blockStart = i;
         }
@@ -38,21 +37,21 @@ class BlameScrollBarUI extends MetalScrollBarUI {
       }
       else {
         if (blockStart >= 0) {
-          paintBlock(g, trackBounds, blockStart, blockEnd);
+          paintBlock(g, bounds, blockStart, blockEnd);
           blockStart = -1;
         }
       }
     }
     if (blockStart >= 0) {
-      paintBlock(g, trackBounds, blockStart, blockEnd);
+      paintBlock(g, bounds, blockStart, blockEnd);
     }
   }
 
-  private void paintBlock(Graphics g, Rectangle trackBounds, int start, int end) {
-    int x = trackBounds.x + 2;
-    int y = (int)((double)start / _lines.length * trackBounds.height) + trackBounds.y;
-    int width = 5;
-    int height = (int)((double)(end - start) / _lines.length * trackBounds.height);
+  private function paintBlock(g : Graphics, bounds : Rectangle, start : int, end : int) {
+    var x = bounds.X as int + 2
+    var y = (((start as double) / _lines.length * bounds.height) as int) + (bounds.Y as int)
+    var width = 5
+    var height = (((end - start) as double) / _lines.length * bounds.height) as int
     g.setColor(COLOR_BLOCK_HIGHLIGHT);
     g.fillRect(x, y, width, height);
     g.setColor(COLOR_BLOCK);

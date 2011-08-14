@@ -1,8 +1,10 @@
 package com.github.bchang.p4.blame;
 
+uses java.lang.Integer
+
 /**
  */
-public interface IP4BlameLine {
-  Integer getId();
-  IP4ChangeInfo getChangeInfo();
+interface IP4BlameLine {
+  property get Id() : Integer
+  property get ChangeInfo() : IP4ChangeInfo
 }

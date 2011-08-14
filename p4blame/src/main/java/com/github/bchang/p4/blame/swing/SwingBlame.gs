@@ -1,64 +1,70 @@
 package com.github.bchang.p4.blame.swing;
 
-import com.github.bchang.p4.blame.IP4Blame;
-import com.github.bchang.p4.blame.IP4BlameLine;
-import com.github.bchang.p4.blame.IP4BlameListener;
+uses com.github.bchang.p4.blame.IP4Blame
+uses com.github.bchang.p4.blame.IP4BlameLine
+uses com.github.bchang.p4.blame.IP4BlameListener
 
-import javax.swing.*;
-import javax.swing.table.TableCellRenderer;
-import java.awt.*;
-import java.awt.event.*;
+uses javax.swing.*
+uses java.awt.*
+uses java.awt.event.*
+uses java.lang.*
+uses java.util.concurrent.locks.ReentrantLock
 
 /**
  */
-@SuppressWarnings({"UnusedDeclaration"})
-public class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
+class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
 
-  private final Object _lock = new Object();
-  private final IP4Blame _blame;
+  var _lock = new ReentrantLock()
+  var _blame : IP4Blame
 
-  private JTextField _pathField;
-  private JButton _goButton;
+  var _pathField : JTextField
+  var _goButton : JButton
 
-  private BlameTableModel _model;
-  private BlameScrollBarUI _scrollBarUI;
+  var _model : BlameTableModel
+  var _scrollBarUI : BlameScrollBarUI
 
-  private JLabel _status;
+  var _status : JLabel
 
-  private int _numDiscovered;
+  var _numDiscovered : int
 
-  public SwingBlame(IP4Blame blame, String path) {
+  // TODO - figure these out
+  var _me : SwingBlame
+  static var BORDERLAYOUT_CENTER = "Center"
+  static var BORDERLAYOUT_NORTH = "North"
+  static var BORDERLAYOUT_EAST = "East"
+  static var BORDERLAYOUT_SOUTH = "South"
+
+  construct(blame : IP4Blame, path : String) {
     super();
+    _me = this
     _blame = blame;
     _blame.addListener(this);
     this.addWindowListener(new WindowAdapter() {
-      @Override
-      public void windowClosing(WindowEvent e) {
+      override function windowClosing(e : WindowEvent) {
         System.exit(0);
       }
     });
 
     this.setSize(800, 600);
-    this.setLayout(new BorderLayout());
+    this.Layout = new BorderLayout()
 
-    JPanel topPanel = new JPanel();
+    var topPanel = new JPanel()
     topPanel.setLayout(new BorderLayout());
     _pathField = new JTextField(path);
     _pathField.addActionListener(this);
-    topPanel.add(_pathField, BorderLayout.CENTER);
+    topPanel.add(_pathField, BORDERLAYOUT_CENTER);
     _goButton = new JButton("Go");
     _goButton.addActionListener(this);
-    topPanel.add(_goButton, BorderLayout.EAST);
-    this.add(topPanel, BorderLayout.NORTH);
+    topPanel.add(_goButton, BORDERLAYOUT_EAST);
+    this.add(topPanel, BORDERLAYOUT_NORTH);
 
     _model = new BlameTableModel();
-    final JTable table = new JTable(_model);
+    var table = new JTable(_model)
     table.addMouseMotionListener(new MouseMotionAdapter() {
-      @Override
-      public void mouseMoved(MouseEvent e) {
-        Point p = e.getPoint();
-        int row = table.rowAtPoint(p);
-        int col = table.columnAtPoint(p);
+      override function mouseMoved(e : MouseEvent) {
+        var p = e.getPoint()
+        var row = table.rowAtPoint(p)
+        var col = table.columnAtPoint(p)
         _model.maybeShowChangeInfo(table, row, col);
       }
     });
@@ -67,39 +73,40 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
     table.getColumnModel().getColumn(1).setMaxWidth(100);
     table.getColumnModel().getColumn(2).setMaxWidth(100);
     table.getColumnModel().getColumn(3).setMaxWidth(40);
-    JScrollPane scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-    JScrollBar scrollBar = new JScrollBar();
+    var scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED)
+    var scrollBar = new JScrollBar()
     _scrollBarUI = new BlameScrollBarUI();
     scrollBar.setUI(_scrollBarUI);
     scrollPane.setVerticalScrollBar(scrollBar);
-    this.add(scrollPane, BorderLayout.CENTER);
+    this.add(scrollPane, BORDERLAYOUT_CENTER);
 
     _status = new JLabel();
-    _status.setVisible(false);
-    this.add(_status, BorderLayout.SOUTH);
+    _status.Visible = false
+    this.add(_status, BORDERLAYOUT_SOUTH);
   }
 
-  public void status(final String status) {
+  override function status(status : String) {
     EventQueue.invokeLater(new Runnable() {
-      public void run() {
-        _status.setText(status);
+      override function run() {
+        _status.Text = status
       }
     });
   }
 
-  public void lineDiscovered(final IP4BlameLine line) {
+  override function lineDiscovered(line : IP4BlameLine) {
     EventQueue.invokeLater(new Runnable() {
-      public void run() {
+      override function run() {
         _scrollBarUI.setLineFound(line.getId());
         _model.setChangeInfo(line.getId(), line.getChangeInfo());
         _model.fireTableRowsUpdated(line.getId(), line.getId());
-        SwingBlame.this.repaint();
+        _me.repaint();
       }
     });
-    synchronized(_lock) {
-      if (++_numDiscovered == _model.getRowCount()) {
+    using(_lock) {
+      _numDiscovered++
+      if (_numDiscovered == _model.getRowCount()) {
         EventQueue.invokeLater(new Runnable() {
-          public void run() {
+          override function run() {
             blameFinished();
           }
         });
@@ -107,43 +114,43 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
     }
   }
 
-  public void actionPerformed(ActionEvent evt) {
-    if (evt.getSource() == _pathField || evt.getSource() == _goButton) {
+  override function actionPerformed(evt : ActionEvent) {
+    if (evt.Source == _pathField || evt.Source == _goButton) {
       try {
-        synchronized(_lock) {
+        using(_lock) {
           _numDiscovered = 0;
         }
         blameStarted();
-        String[] lines = _blame.setup(_pathField.getText());
+        var lines = _blame.setup(_pathField.getText());
         _scrollBarUI.setLines(lines);
         _model.setLines(lines);
         _model.fireTableDataChanged();
-        SwingBlame.this.repaint();
-        Thread blameThread = new Thread(new Runnable() {
-          public void run() {
-            long startTime = System.nanoTime();
+        _me.repaint();
+        var blameThread = new Thread(new Runnable() {
+          override function run() {
+            var startTime = System.nanoTime()
             _blame.start();
-            long runningTime = System.nanoTime() - startTime;
-            System.out.println("blame ran in " + (runningTime / 1000 / 1000) + " ms");
+            var runningTime = System.nanoTime() - startTime
+            print("blame ran in " + (runningTime / 1000 / 1000) + " ms")
           }
         });
         blameThread.start();
-      } catch (IllegalArgumentException ex) {
-        JOptionPane.showMessageDialog(this, ex.getMessage());
+      } catch (ex : IllegalArgumentException) {
+        JOptionPane.showMessageDialog(this, ex.Message)
       }
     }
   }
 
-  private void blameStarted() {
-    _pathField.setEnabled(false);
-    _goButton.setEnabled(false);
-    _status.setVisible(true);
+  private function blameStarted() {
+    _pathField.Enabled = false
+    _goButton.Enabled = false
+    _status.Visible = true
   }
 
-  private void blameFinished() {
-    _pathField.setEnabled(true);
-    _goButton.setEnabled(true);
-    _status.setVisible(false);
+  private function blameFinished() {
+    _pathField.Enabled = true
+    _goButton.Enabled = true
+    _status.Visible = false
   }
 
 }

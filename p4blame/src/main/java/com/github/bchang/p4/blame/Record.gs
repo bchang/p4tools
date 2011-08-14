@@ -8,7 +8,7 @@ class Record implements IP4BlameLine
   var _fileLogEntry : FileLog.Entry as readonly LogEntry // TODO - this can go away when I write ConsoleBlame
   var _changeInfo : IP4ChangeInfo as readonly ChangeInfo
   var _line : String as readonly Line
-  var _id : Integer as Id
+  var _id : Integer as readonly Id
 
   construct(lineArg : String, i : int) {
     _line = lineArg
