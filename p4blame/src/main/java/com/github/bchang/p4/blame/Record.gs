@@ -18,16 +18,8 @@ class Record implements IP4BlameLine
     _id = i
   }
 
-  function foundSourceRev(entry : FileLog.Entry) {
+  function discovered(entry : FileLog.Entry) {
     _fileLogEntry = entry
-  }
-
-  function resetSourceRev() {
-    _fileLogEntry = null
-  }
-
-  function hasFoundSourceRev() : boolean {
-    return LogEntry != null
   }
 
   override function toString() : String {

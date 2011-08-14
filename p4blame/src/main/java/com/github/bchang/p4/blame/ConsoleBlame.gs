@@ -15,9 +15,6 @@ class ConsoleBlame implements IP4BlameListener {
     _blame.start()
   }
 
-  override function lineDiscovered(idx : int, line : IP4BlameLine) {
-  }
-
-  override function blameDone() {
+  override function lineDiscovered(line : IP4BlameLine) {
   }
 }

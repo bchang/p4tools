@@ -8,6 +8,5 @@ package com.github.bchang.p4.blame;
  * To change this template use File | Settings | File Templates.
  */
 public interface IP4BlameListener {
-  void lineDiscovered(int idx, IP4BlameLine line);
-  void blameDone();
+  void lineDiscovered(IP4BlameLine line);
 }
