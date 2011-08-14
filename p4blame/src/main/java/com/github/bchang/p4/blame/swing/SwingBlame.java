@@ -5,43 +5,69 @@ import com.github.bchang.p4.blame.IP4BlameLine;
 import com.github.bchang.p4.blame.IP4BlameListener;
 
 import javax.swing.*;
+import javax.swing.plaf.metal.MetalScrollBarUI;
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 /**
  */
 public class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
 
+  public static final Color COLOR_BLOCK_HIGHLIGHT = new Color(114, 153, 191);
+  public static final Color COLOR_BLOCK = new Color(153, 204, 255);
+  public static final Color COLOR_BLOCK_SHADOW = new Color(218, 255, 255);
   private final IP4Blame _blame;
   private BlameTableModel _lines;
   private JTextField _pathField;
   private JTable _table;
+  private JScrollBar _scrollBar;
+  private BlameScrollBarUI _scrollBarUI;
   private Thread _blameThread;
 
   public SwingBlame(IP4Blame blame) {
     super();
     _blame = blame;
     _blame.addListener(this);
+    this.addWindowListener(new WindowAdapter() {
+      @Override
+      public void windowClosing(WindowEvent e) {
+        System.exit(0);
+      }
+    });
   }
 
-  public void go() {
+  public void go(String path) {
     this.setSize(800, 600);
     this.setLayout(new BorderLayout());
-    _pathField = new JTextField("");
+    _pathField = new JTextField(path);
     this.add(_pathField, BorderLayout.NORTH);
     _pathField.addActionListener(this);
     _lines = new BlameTableModel();
     _table = new JTable(_lines);
-    this.add(_table, BorderLayout.CENTER);
+    _table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+    _table.getColumnModel().getColumn(0).setMaxWidth(100);
+    _table.getColumnModel().getColumn(1).setMaxWidth(100);
+    _table.getColumnModel().getColumn(2).setMaxWidth(50);
+    JScrollPane scrollPane = new JScrollPane(_table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+    _scrollBar = new JScrollBar();
+    _scrollBarUI = new BlameScrollBarUI();
+    _scrollBar.setUI(_scrollBarUI);
+    scrollPane.setVerticalScrollBar(_scrollBar);
+    this.add(scrollPane, BorderLayout.CENTER);
     this.setVisible(true);
   }
 
   public void lineDiscovered(final IP4BlameLine line) {
     EventQueue.invokeLater(new Runnable() {
       public void run() {
+        _scrollBarUI._lines[line.getId()] = true;
+        _scrollBar.repaint();
         _lines._changes[line.getId()] = line.getChange();
+        _lines._users[line.getId()] = line.getUser();
         _lines.fireTableRowsUpdated(line.getId(), line.getId());
         _table.repaint();
       }
@@ -50,7 +76,9 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
 
   public void actionPerformed(ActionEvent e) {
     if (e.getSource() == _pathField) {
-      _lines.setLines(_blame.forPathNoStart(_pathField.getText()));
+      IP4BlameLine[] lines = _blame.forPathNoStart(_pathField.getText());
+      _scrollBarUI.setLines(lines);
+      _lines.setLines(lines);
       _lines.fireTableDataChanged();
       _table.repaint();
       _blameThread = new Thread(new Runnable() {
@@ -65,8 +93,56 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
     }
   }
 
+  class BlameScrollBarUI extends MetalScrollBarUI {
+    private boolean[] _lines = new boolean[0];
+
+    void setLines(IP4BlameLine[] lines) {
+      _lines = new boolean[lines.length];
+    }
+
+    @Override
+    protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
+      super.paintTrack(g, c, trackBounds);
+
+      int blockStart = -1;
+      int blockEnd = -1;
+      for (int i = 0; i < _lines.length; i++) {
+        if (_lines[i]) {
+          if (blockStart < 0) {
+            blockStart = i;
+          }
+          blockEnd = i;
+        }
+        else {
+          if (blockStart >= 0) {
+            paintBlock(g, trackBounds, blockStart, blockEnd);
+            blockStart = -1;
+          }
+        }
+      }
+      if (blockStart >= 0) {
+        paintBlock(g, trackBounds, blockStart, blockEnd);
+      }
+    }
+
+    private void paintBlock(Graphics g, Rectangle trackBounds, int start, int end) {
+      int x = trackBounds.x + 2;
+      int y = (int)((double)start / _lines.length * trackBounds.height) + trackBounds.y;
+      int width = 5;
+      int height = (int)((double)(end - start) / _lines.length * trackBounds.height);
+      g.setColor(COLOR_BLOCK_HIGHLIGHT);
+      g.fillRect(x, y, width, height);
+      g.setColor(COLOR_BLOCK);
+      g.fillRect(x, y, width - 1, height - 1);
+      g.setColor(COLOR_BLOCK_SHADOW);
+      g.drawLine(x, y, x + width - 1, y);
+      g.drawLine(x, y, x, y + height);
+    }
+  }
+
   class BlameTableModel extends AbstractTableModel {
     Integer[] _changes;
+    String[] _users;
     String[] _lines = new String[0];
 
     void setLines(IP4BlameLine[] lines) {
@@ -75,6 +151,7 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
         _lines[i] = lines[i].getLine();
       }
       _changes = new Integer[lines.length];
+      _users = new String[lines.length];
     }
 
     public int getRowCount() {
@@ -82,7 +159,7 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
     }
 
     public int getColumnCount() {
-      return 3;
+      return 4;
     }
 
     public String getColumnName(int columnIndex) {
@@ -90,8 +167,10 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
       case 0:
         return "Change";
       case 1:
-        return "Line";
+        return "User";
       case 2:
+        return "Line";
+      case 3:
         return "";
       default:
         return null;
@@ -103,8 +182,10 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
       case 0:
         return Integer.class;
       case 1:
-        return Integer.class;
+        return String.class;
       case 2:
+        return Integer.class;
+      case 3:
         return String.class;
       default:
         return null;
@@ -116,8 +197,10 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
       case 0:
         return _changes[rowIndex];
       case 1:
-        return rowIndex;
+        return _users[rowIndex];
       case 2:
+        return rowIndex;
+      case 3:
         return _lines[rowIndex];
       default:
         return null;

@@ -13,6 +13,10 @@ class Record implements IP4BlameLine
     return LogEntry.Change
   }
 
+  property get User() : String {
+    return LogEntry.User
+  }
+
   construct(lineArg : String, i : int) {
     _line = lineArg
     _id = i
