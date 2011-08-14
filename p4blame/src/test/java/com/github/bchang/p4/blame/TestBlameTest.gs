@@ -34,9 +34,9 @@ class TestBlameTest extends AbstractP4Test {
     var lines = testBlame.setup(file.Path)
     testBlame.start()
     Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {0, 1, 2})
-    assertEquals(change, testBlame.Results[0].Change)
-    assertEquals(change, testBlame.Results[1].Change)
-    assertEquals(change, testBlame.Results[2].Change)
+    assertEquals(change, testBlame.Results[0].ChangeInfo.Change)
+    assertEquals(change, testBlame.Results[1].ChangeInfo.Change)
+    assertEquals(change, testBlame.Results[2].ChangeInfo.Change)
   }
 
   function testBlameForFileWithManyRevs() {
@@ -59,9 +59,9 @@ class TestBlameTest extends AbstractP4Test {
     var lines = testBlame.setup(file.Path)
     testBlame.start()
     Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {2, 1, 0})
-    assertEquals(change1, testBlame.Results[0].Change)
-    assertEquals(change2, testBlame.Results[1].Change)
-    assertEquals(change3, testBlame.Results[2].Change)
+    assertEquals(change1, testBlame.Results[0].ChangeInfo.Change)
+    assertEquals(change2, testBlame.Results[1].ChangeInfo.Change)
+    assertEquals(change3, testBlame.Results[2].ChangeInfo.Change)
   }
 
   function testBlameForFileWithManyRevs2() {
@@ -81,9 +81,9 @@ class TestBlameTest extends AbstractP4Test {
     var lines = testBlame.setup(file.Path)
     testBlame.start()
     Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {2, 1, 0})
-    assertEquals(change1, testBlame.Results[0].Change)
-    assertEquals(change2, testBlame.Results[1].Change)
-    assertEquals(change3, testBlame.Results[2].Change)
+    assertEquals(change1, testBlame.Results[0].ChangeInfo.Change)
+    assertEquals(change2, testBlame.Results[1].ChangeInfo.Change)
+    assertEquals(change3, testBlame.Results[2].ChangeInfo.Change)
   }
 
   function testBlameForFileAcrossBranches() {
@@ -105,8 +105,8 @@ class TestBlameTest extends AbstractP4Test {
     var lines = testBlame.setup(fileA.Path)
     testBlame.start()
     Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {0, 2, 1})
-    assertEquals(change3, testBlame.Results[0].Change)
-    assertEquals(change1, testBlame.Results[1].Change)
-    assertEquals(change3, testBlame.Results[2].Change)
+    assertEquals(change3, testBlame.Results[0].ChangeInfo.Change)
+    assertEquals(change1, testBlame.Results[1].ChangeInfo.Change)
+    assertEquals(change3, testBlame.Results[2].ChangeInfo.Change)
   }
 }

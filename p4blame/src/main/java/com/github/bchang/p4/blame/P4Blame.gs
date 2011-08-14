@@ -1,18 +1,8 @@
 package com.github.bchang.p4.blame
 
-uses com.github.bchang.p4.base.Diff2
-uses com.github.bchang.p4.base.FileLog
-uses com.github.bchang.p4.base.P4Client
-uses com.github.bchang.p4.base.P4Factory
-uses com.github.bchang.p4.base.Path
-uses com.github.bchang.p4.base.PathRange
-uses com.github.bchang.p4.base.PathRev
+uses com.github.bchang.p4.base.*
 uses java.lang.*
-uses java.util.ArrayList
-uses java.util.Arrays
-uses java.util.HashSet
-uses java.util.Map
-uses java.lang.Integer
+uses java.util.*
 uses gw.util.AutoMap
 uses gw.util.Pair
 
@@ -144,10 +134,13 @@ class P4Blame implements IP4Blame
         backtrackIntoIntegSource(origWorkingList.dup(), source, logEntry, recordsChangedWithinPath, recursionDepth)
       }
 
-      for (rec in recordsChangedWithinPath) {
-        rec.discovered(logEntry)
-        for (listener in _listeners) {
-          listener.lineDiscovered(rec)
+      if (recordsChangedWithinPath.Count > 0) {
+        var changeInfo = new ChangeInfo(logEntry)
+        for (rec in recordsChangedWithinPath) {
+          rec.discovered(logEntry, changeInfo)
+          for (listener in _listeners) {
+            listener.lineDiscovered(rec)
+          }
         }
       }
     }
@@ -202,6 +195,42 @@ class P4Blame implements IP4Blame
     var bytes = new byte[n << 3]
     Arrays.fill(bytes, 32 as byte)
     return new String(bytes)
+  }
+
+  class ChangeInfo implements IP4ChangeInfo {
+    var _change : int as Change
+    var _date : String as Date
+    var _user : String as User
+    var _description : String as Description
+    construct(logEntry : FileLog.Entry) {
+      Change = logEntry.Change
+      Date = logEntry.Date
+      User = logEntry.User
+      Description = buildDescription()
+    }
+
+    private function buildDescription() : String {
+      var desc : LinkedList<String>
+      _p4.exec("change -o ${Change}", \ line -> {
+        if (desc != null) {
+          if (line.startsWith("\t")) {
+            line = line.substring(1) // ignore the leading \t
+          }
+          desc.add(line)
+        } else if (line.startsWith("Description:")) {
+          desc = new LinkedList<String>()
+        }
+      })
+      if (desc == null) {
+        throw new IllegalStateException("could not find descBuilder for Change ${Change}")
+      }
+      while (desc.Count > 0 && desc.Last.trim().length() == 0) {
+        desc.removeLast()
+      }
+      var descBuilder = new StringBuilder()
+      descBuilder.append(desc.join("\n"))
+      return descBuilder.toString()
+    }
   }
 
 }

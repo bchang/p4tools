@@ -1,22 +1,23 @@
 package com.github.bchang.p4.blame.swing;
 
-import com.github.bchang.p4.blame.IP4BlameLine;
+import com.github.bchang.p4.blame.IP4ChangeInfo;
 
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 
 /**
  */
 class BlameTableModel extends AbstractTableModel {
-  Integer[] _changes;
-  String[] _users;
-  String[] _dates;
   String[] _lines = new String[0];
+  private IP4ChangeInfo[] _changes;
 
   void setLines(String[] lines) {
     _lines = lines;
-    _changes = new Integer[lines.length];
-    _users = new String[lines.length];
-    _dates = new String[lines.length];
+    _changes = new IP4ChangeInfo[lines.length];
+  }
+
+  void setChangeInfo(int idx, IP4ChangeInfo change) {
+    _changes[idx] = change;
   }
 
   public int getRowCount() {
@@ -61,20 +62,63 @@ class BlameTableModel extends AbstractTableModel {
     }
   }
 
-  public Object getValueAt(int rowIndex, int columnIndex) {
-    switch (columnIndex) {
+  public Object getValueAt(int row, int col) {
+    IP4ChangeInfo change = _changes[row];
+    switch (col) {
     case 0:
-      return _users[rowIndex];
+      return change == null ? null : change.getUser();
     case 1:
-      return _dates[rowIndex];
+      return change == null ? null : change.getDate();
     case 2:
-      return _changes[rowIndex];
+      return change == null ? null : change.getChange();
     case 3:
-      return rowIndex;
+      return row;
     case 4:
-      return _lines[rowIndex];
+      return _lines[row];
     default:
       return null;
     }
+  }
+
+  public void maybeShowChangeInfo(JTable table, int row, int col) {
+    if (0 <= col && col <=2) {
+      IP4ChangeInfo change = _changes[row];
+      if (change != null) {
+        table.setToolTipText(toHTML("Change " + change.getChange() +
+                " by " + change.getUser() + " on " + change.getDate() + "\n\n" +
+                change.getDescription()
+        ));
+      }
+    } else {
+      table.setToolTipText(null);
+    }
+  }
+
+  private String toHTML(String s) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("<html>");
+    for (char c : s.toCharArray()) {
+      switch (c) {
+      case '>':
+        sb.append("&gt;");
+        break;
+      case '<':
+        sb.append("&lt;");
+        break;
+      case '"':
+        sb.append("&quot;");
+        break;
+      case '&':
+        sb.append("&amp;");
+        break;
+      case '\n':
+        sb.append("<br/>");
+        break;
+      default:
+        sb.append(c);
+      }
+    }
+    sb.append("<html>");
+    return sb.toString();
   }
 }

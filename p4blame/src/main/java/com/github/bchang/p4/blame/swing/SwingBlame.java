@@ -5,11 +5,9 @@ import com.github.bchang.p4.blame.IP4BlameLine;
 import com.github.bchang.p4.blame.IP4BlameListener;
 
 import javax.swing.*;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 
 /**
  */
@@ -54,7 +52,16 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
     this.add(topPanel, BorderLayout.NORTH);
 
     _model = new BlameTableModel();
-    JTable table = new JTable(_model);
+    final JTable table = new JTable(_model);
+    table.addMouseMotionListener(new MouseMotionAdapter() {
+      @Override
+      public void mouseMoved(MouseEvent e) {
+        Point p = e.getPoint();
+        int row = table.rowAtPoint(p);
+        int col = table.columnAtPoint(p);
+        _model.maybeShowChangeInfo(table, row, col);
+      }
+    });
     table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
     table.getColumnModel().getColumn(0).setMaxWidth(100);
     table.getColumnModel().getColumn(1).setMaxWidth(100);
@@ -84,9 +91,7 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
     EventQueue.invokeLater(new Runnable() {
       public void run() {
         _scrollBarUI.setLineFound(line.getId());
-        _model._changes[line.getId()] = line.getChange();
-        _model._users[line.getId()] = line.getUser();
-        _model._dates[line.getId()] = line.getDate();
+        _model.setChangeInfo(line.getId(), line.getChangeInfo());
         _model.fireTableRowsUpdated(line.getId(), line.getId());
         SwingBlame.this.repaint();
       }
