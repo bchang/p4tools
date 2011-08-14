@@ -109,7 +109,7 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
           _numDiscovered = 0;
         }
         blameStarted();
-        IP4BlameLine[] lines = _blame.forPathNoStart(_pathField.getText());
+        String[] lines = _blame.setup(_pathField.getText());
         _scrollBarUI.setLines(lines);
         _model.setLines(lines);
         _model.fireTableDataChanged();

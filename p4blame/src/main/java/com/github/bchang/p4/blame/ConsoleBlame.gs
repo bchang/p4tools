@@ -11,7 +11,7 @@ class ConsoleBlame implements IP4BlameListener {
   }
 
   function start(path : String) {
-    _lines = _blame.forPathNoStart(path)
+    _lines = _blame.setup(path)
     _blame.start()
   }
 

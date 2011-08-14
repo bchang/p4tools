@@ -12,11 +12,8 @@ class BlameTableModel extends AbstractTableModel {
   String[] _dates;
   String[] _lines = new String[0];
 
-  void setLines(IP4BlameLine[] lines) {
-    _lines = new String[lines.length];
-    for (int i = 0; i < lines.length; i++) {
-      _lines[i] = lines[i].getLine();
-    }
+  void setLines(String[] lines) {
+    _lines = lines;
     _changes = new Integer[lines.length];
     _users = new String[lines.length];
     _dates = new String[lines.length];

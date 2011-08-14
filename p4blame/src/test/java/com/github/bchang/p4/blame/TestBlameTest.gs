@@ -15,11 +15,11 @@ class TestBlameTest extends AbstractP4Test {
 
     var blame = new P4Blame(P4)
     var testBlame = new TestBlame(blame)
-    var lines = testBlame.forPathNoStart(file.Path)
+    var lines = testBlame.setup(file.Path)
     assertEquals(3, lines.length)
-    assertEquals("1", lines[0].Line)
-    assertEquals("2", lines[1].Line)
-    assertEquals("3", lines[2].Line)
+    assertEquals("1", lines[0])
+    assertEquals("2", lines[1])
+    assertEquals("3", lines[2])
   }
 
   function testBlameForFileWithOneRev() {
@@ -31,12 +31,12 @@ class TestBlameTest extends AbstractP4Test {
 
     var blame = new P4Blame(P4)
     var testBlame = new TestBlame(blame)
-    var lines = testBlame.forPathNoStart(file.Path)
+    var lines = testBlame.setup(file.Path)
     testBlame.start()
     Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {0, 1, 2})
-    assertEquals(change, lines[0].Change)
-    assertEquals(change, lines[1].Change)
-    assertEquals(change, lines[2].Change)
+    assertEquals(change, testBlame.Results[0].Change)
+    assertEquals(change, testBlame.Results[1].Change)
+    assertEquals(change, testBlame.Results[2].Change)
   }
 
   function testBlameForFileWithManyRevs() {
@@ -56,12 +56,12 @@ class TestBlameTest extends AbstractP4Test {
 
     var blame = new P4Blame(P4)
     var testBlame = new TestBlame(blame)
-    var lines = testBlame.forPathNoStart(file.Path)
+    var lines = testBlame.setup(file.Path)
     testBlame.start()
     Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {2, 1, 0})
-    assertEquals(change1, lines[0].Change)
-    assertEquals(change2, lines[1].Change)
-    assertEquals(change3, lines[2].Change)
+    assertEquals(change1, testBlame.Results[0].Change)
+    assertEquals(change2, testBlame.Results[1].Change)
+    assertEquals(change3, testBlame.Results[2].Change)
   }
 
   function testBlameForFileWithManyRevs2() {
@@ -78,12 +78,12 @@ class TestBlameTest extends AbstractP4Test {
 
     var blame = new P4Blame(P4)
     var testBlame = new TestBlame(blame)
-    var lines = testBlame.forPathNoStart(file.Path)
+    var lines = testBlame.setup(file.Path)
     testBlame.start()
     Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {2, 1, 0})
-    assertEquals(change1, lines[0].Change)
-    assertEquals(change2, lines[1].Change)
-    assertEquals(change3, lines[2].Change)
+    assertEquals(change1, testBlame.Results[0].Change)
+    assertEquals(change2, testBlame.Results[1].Change)
+    assertEquals(change3, testBlame.Results[2].Change)
   }
 
   function testBlameForFileAcrossBranches() {
@@ -102,11 +102,11 @@ class TestBlameTest extends AbstractP4Test {
 
     var blame = new P4Blame(P4)
     var testBlame = new TestBlame(blame)
-    var lines = testBlame.forPathNoStart(fileA.Path)
+    var lines = testBlame.setup(fileA.Path)
     testBlame.start()
     Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {0, 2, 1})
-    assertEquals(change3, lines[0].Change)
-    assertEquals(change1, lines[1].Change)
-    assertEquals(change3, lines[2].Change)
+    assertEquals(change3, testBlame.Results[0].Change)
+    assertEquals(change1, testBlame.Results[1].Change)
+    assertEquals(change3, testBlame.Results[2].Change)
   }
 }

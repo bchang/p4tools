@@ -15,7 +15,7 @@ class BlameScrollBarUI extends MetalScrollBarUI {
 
   private boolean[] _lines = new boolean[0];
 
-  void setLines(IP4BlameLine[] lines) {
+  void setLines(String[] lines) {
     _lines = new boolean[lines.length];
   }
 

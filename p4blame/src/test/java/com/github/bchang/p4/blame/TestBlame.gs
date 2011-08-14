@@ -6,16 +6,18 @@ uses java.util.ArrayList
 class TestBlame implements IP4BlameListener {
 
   var _blame : IP4Blame
-  var _lines : IP4BlameLine[]
+  var _lines : String[]
   var _discoveries : ArrayList<Integer> as DiscoverySequenceByIndex = new ArrayList<Integer>()
+  var _results : IP4BlameLine[] as Results
 
   construct(blame : IP4Blame) {
     _blame = blame
     _blame.addListener(this)
   }
 
-  function forPathNoStart(path : String) : IP4BlameLine[] {
-    _lines = _blame.forPathNoStart(path)
+  function setup(path : String) : String[] {
+    _lines = _blame.setup(path)
+    _results = new IP4BlameLine[_lines.Count]
     return _lines
   }
 
@@ -28,5 +30,6 @@ class TestBlame implements IP4BlameListener {
 
   override function lineDiscovered(line : IP4BlameLine) {
     _discoveries.add(line.Id)
+    _results[line.Id] = line
   }
 }

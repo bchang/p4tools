@@ -7,5 +7,4 @@ public interface IP4BlameLine {
   int getChange();
   String getDate();
   String getUser();
-  String getLine();
 }

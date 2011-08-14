@@ -43,7 +43,7 @@ class P4Blame implements IP4Blame
     _listeners.add(listener)
   }
 
-  override function forPathNoStart(pathStr : String) : IP4BlameLine[] {
+  override function setup(pathStr : String) : String[] {
     var fstatDepotFile : String
     try {
       fstatDepotFile = _p4.fstat(pathStr)["depotFile"]
@@ -60,12 +60,13 @@ class P4Blame implements IP4Blame
     else {
       _path = P4Factory.createPath(fstatDepotFile)
     }
+    var lines = _p4.print(_path)
     var records = new ArrayList<Record>()
-    for (line in _p4.print(_path) index i) {
+    for (line in lines index i) {
       records.add(new Record(line, i))
     }
     _recordList = new RecordList(_path as String, records)
-    return _recordList.toArray(new Record[_recordList.size()])
+    return lines.toArray(new String[lines.Count])
   }
 
   override function start() {
@@ -75,7 +76,7 @@ class P4Blame implements IP4Blame
   function forPath(pathStr : String) : RecordList {
     var start = java.lang.System.nanoTime()
 
-    forPathNoStart(pathStr)
+    setup(pathStr)
     start()
 
     print("time elapsed: " + ((java.lang.System.nanoTime() - start) / 1000 / 1000) + " ms")
