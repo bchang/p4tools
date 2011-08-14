@@ -7,6 +7,7 @@ uses com.github.bchang.p4.blame.IP4BlameListener
 uses javax.swing.*
 uses java.awt.*
 uses java.awt.event.*
+uses java.io.File
 uses java.lang.*
 uses java.util.concurrent.locks.ReentrantLock
 
@@ -18,7 +19,7 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
   var _blame : IP4Blame
 
   var _pathField : JTextField
-  var _goButton : JButton
+  var _chooserButton : JButton
 
   var _model : BlameTableModel
   var _scrollBarUI : BlameScrollBarUI
@@ -30,12 +31,13 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
   // TODO - figure these out
   var _me : SwingBlame
   static var BORDERLAYOUT_CENTER = "Center"
-  static var BORDERLAYOUT_NORTH = "North"
   static var BORDERLAYOUT_EAST = "East"
   static var BORDERLAYOUT_SOUTH = "South"
+  static var BORDERLAYOUT_WEST = "West"
+  static var BORDERLAYOUT_NORTH = "North"
 
   construct(blame : IP4Blame, path : String) {
-    super();
+    super("p4blame");
     _me = this
     _blame = blame;
     _blame.addListener(this);
@@ -49,13 +51,14 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
     this.Layout = new BorderLayout()
 
     var topPanel = new JPanel()
-    topPanel.setLayout(new BorderLayout());
+    topPanel.Layout = new BorderLayout()
     _pathField = new JTextField(path);
+    _pathField.ToolTipText = "Enter a depot or file system path here."
     _pathField.addActionListener(this);
     topPanel.add(_pathField, BORDERLAYOUT_CENTER);
-    _goButton = new JButton("Go");
-    _goButton.addActionListener(this);
-    topPanel.add(_goButton, BORDERLAYOUT_EAST);
+    _chooserButton = new JButton("...")
+    _chooserButton.addActionListener(this)
+    topPanel.add(_chooserButton, BORDERLAYOUT_EAST)
     this.add(topPanel, BORDERLAYOUT_NORTH);
 
     _model = new BlameTableModel();
@@ -115,41 +118,50 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
   }
 
   override function actionPerformed(evt : ActionEvent) {
-    if (evt.Source == _pathField || evt.Source == _goButton) {
-      try {
-        using(_lock) {
-          _numDiscovered = 0;
-        }
-        blameStarted();
-        var lines = _blame.setup(_pathField.getText());
-        _scrollBarUI.setLines(lines);
-        _model.setLines(lines);
-        _model.fireTableDataChanged();
-        _me.repaint();
-        var blameThread = new Thread(new Runnable() {
-          override function run() {
-            var startTime = System.nanoTime()
-            _blame.start();
-            var runningTime = System.nanoTime() - startTime
-            print("blame ran in " + (runningTime / 1000 / 1000) + " ms")
-          }
-        });
-        blameThread.start();
-      } catch (ex : IllegalArgumentException) {
-        JOptionPane.showMessageDialog(this, ex.Message)
+    if (evt.Source == _pathField) {
+      startBlame()
+    }
+    else if (evt.Source == _chooserButton) {
+      var chooser = new JFileChooser()
+      if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+        _pathField.Text = chooser.SelectedFile.Path
+        startBlame()
       }
     }
   }
 
-  private function blameStarted() {
+  private function startBlame() {
     _pathField.Enabled = false
-    _goButton.Enabled = false
+    _chooserButton.Enabled = false
     _status.Visible = true
+
+    try {
+      using(_lock) {
+        _numDiscovered = 0;
+      }
+      var lines = _blame.setup(_pathField.getText());
+      _scrollBarUI.setLines(lines);
+      _model.setLines(lines);
+      _model.fireTableDataChanged();
+      _me.repaint();
+      var blameThread = new Thread(new Runnable() {
+        override function run() {
+          var startTime = System.nanoTime()
+          _blame.start();
+          var runningTime = System.nanoTime() - startTime
+          print("blame ran in " + (runningTime / 1000 / 1000) + " ms")
+        }
+      });
+      blameThread.start();
+    } catch (ex : IllegalArgumentException) {
+      JOptionPane.showMessageDialog(this, ex.Message)
+      blameFinished()
+    }
   }
 
   private function blameFinished() {
     _pathField.Enabled = true
-    _goButton.Enabled = true
+    _chooserButton.Enabled = true
     _status.Visible = false
   }
 
