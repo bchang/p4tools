@@ -7,6 +7,7 @@ uses com.github.bchang.p4.base.P4Factory
 uses com.github.bchang.p4.base.Path
 uses com.github.bchang.p4.base.PathRange
 uses com.github.bchang.p4.base.PathRev
+uses java.lang.*
 uses java.util.ArrayList
 uses java.util.Arrays
 uses java.util.HashSet
@@ -43,9 +44,14 @@ class P4Blame implements IP4Blame
   }
 
   override function forPathNoStart(pathStr : String) : IP4BlameLine[] {
-    var fstatDepotFile = _p4.fstat(pathStr)["depotFile"]
+    var fstatDepotFile : String
+    try {
+      fstatDepotFile = _p4.fstat(pathStr)["depotFile"]
+    } catch (e : gw.util.CommandFailedException) {
+      throw new IllegalArgumentException("No such file in depot: ${pathStr}")
+    }
     if (fstatDepotFile == null) {
-      throw "No such file in depot: ${pathStr}"
+      throw new IllegalArgumentException("No such file in depot: ${pathStr}")
     }
     _path = P4Factory.createPath(pathStr)
     if (_path typeis PathRev) {

@@ -74,22 +74,26 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
     });
   }
 
-  public void actionPerformed(ActionEvent e) {
-    if (e.getSource() == _pathField) {
-      IP4BlameLine[] lines = _blame.forPathNoStart(_pathField.getText());
-      _scrollBarUI.setLines(lines);
-      _lines.setLines(lines);
-      _lines.fireTableDataChanged();
-      _table.repaint();
-      _blameThread = new Thread(new Runnable() {
-        public void run() {
-          long startTime = System.nanoTime();
-          _blame.start();
-          long runningTime = System.nanoTime() - startTime;
-          System.out.println("blame ran in " + (runningTime / 1000 / 1000) + " ms");
-        }
-      });
-      _blameThread.start();
+  public void actionPerformed(ActionEvent evt) {
+    if (evt.getSource() == _pathField) {
+      try {
+        IP4BlameLine[] lines = _blame.forPathNoStart(_pathField.getText());
+        _scrollBarUI.setLines(lines);
+        _lines.setLines(lines);
+        _lines.fireTableDataChanged();
+        _table.repaint();
+        _blameThread = new Thread(new Runnable() {
+          public void run() {
+            long startTime = System.nanoTime();
+            _blame.start();
+            long runningTime = System.nanoTime() - startTime;
+            System.out.println("blame ran in " + (runningTime / 1000 / 1000) + " ms");
+          }
+        });
+        _blameThread.start();
+      } catch (IllegalArgumentException ex) {
+        JOptionPane.showMessageDialog(this, ex.getMessage());
+      }
     }
   }
 

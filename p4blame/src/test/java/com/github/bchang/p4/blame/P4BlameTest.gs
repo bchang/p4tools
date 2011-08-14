@@ -1,5 +1,7 @@
 package com.github.bchang.p4.blame
+
 uses com.github.bchang.p4.base.AbstractP4Test
+uses java.lang.*
 
 class P4BlameTest extends AbstractP4Test {
 
@@ -175,9 +177,9 @@ class P4BlameTest extends AbstractP4Test {
     var file = newUniqueFile()
     try {
       new P4Blame(P4).forPath(file.Path)
-      fail("should have caught exception")
+      fail("should have caught IllegalArgumentException")
     }
-    catch (e) {
+    catch (e : IllegalArgumentException) {
       assertEquals("No such file in depot: ${file.Path}", e.Message)
     }
   }
