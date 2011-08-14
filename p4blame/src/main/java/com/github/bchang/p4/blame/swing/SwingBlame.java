@@ -5,8 +5,6 @@ import com.github.bchang.p4.blame.IP4BlameLine;
 import com.github.bchang.p4.blame.IP4BlameListener;
 
 import javax.swing.*;
-import javax.swing.plaf.metal.MetalScrollBarUI;
-import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,24 +13,23 @@ import java.awt.event.WindowEvent;
 
 /**
  */
+@SuppressWarnings({"UnusedDeclaration"})
 public class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
 
   private final Object _lock = new Object();
-  public static final Color COLOR_BLOCK_HIGHLIGHT = new Color(114, 153, 191);
-  public static final Color COLOR_BLOCK = new Color(153, 204, 255);
-  public static final Color COLOR_BLOCK_SHADOW = new Color(218, 255, 255);
   private final IP4Blame _blame;
-  private BlameTableModel _lines;
+
   private JTextField _pathField;
   private JButton _goButton;
-  private JTable _table;
-  private JScrollBar _scrollBar;
+
+  private BlameTableModel _model;
   private BlameScrollBarUI _scrollBarUI;
+
   private JLabel _status;
-  private Thread _blameThread;
+
   private int _numDiscovered;
 
-  public SwingBlame(IP4Blame blame) {
+  public SwingBlame(IP4Blame blame, String path) {
     super();
     _blame = blame;
     _blame.addListener(this);
@@ -42,9 +39,7 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
         System.exit(0);
       }
     });
-  }
 
-  public void go(String path) {
     this.setSize(800, 600);
     this.setLayout(new BorderLayout());
 
@@ -58,25 +53,23 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
     topPanel.add(_goButton, BorderLayout.EAST);
     this.add(topPanel, BorderLayout.NORTH);
 
-    _lines = new BlameTableModel();
-    _table = new JTable(_lines);
-    _table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-    _table.getColumnModel().getColumn(0).setMaxWidth(100);
-    _table.getColumnModel().getColumn(1).setMaxWidth(100);
-    _table.getColumnModel().getColumn(2).setMaxWidth(100);
-    _table.getColumnModel().getColumn(3).setMaxWidth(40);
-    JScrollPane scrollPane = new JScrollPane(_table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-    _scrollBar = new JScrollBar();
+    _model = new BlameTableModel();
+    JTable table = new JTable(_model);
+    table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+    table.getColumnModel().getColumn(0).setMaxWidth(100);
+    table.getColumnModel().getColumn(1).setMaxWidth(100);
+    table.getColumnModel().getColumn(2).setMaxWidth(100);
+    table.getColumnModel().getColumn(3).setMaxWidth(40);
+    JScrollPane scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+    JScrollBar scrollBar = new JScrollBar();
     _scrollBarUI = new BlameScrollBarUI();
-    _scrollBar.setUI(_scrollBarUI);
-    scrollPane.setVerticalScrollBar(_scrollBar);
+    scrollBar.setUI(_scrollBarUI);
+    scrollPane.setVerticalScrollBar(scrollBar);
     this.add(scrollPane, BorderLayout.CENTER);
 
     _status = new JLabel();
     _status.setVisible(false);
     this.add(_status, BorderLayout.SOUTH);
-
-    this.setVisible(true);
   }
 
   public void status(final String status) {
@@ -90,17 +83,16 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
   public void lineDiscovered(final IP4BlameLine line) {
     EventQueue.invokeLater(new Runnable() {
       public void run() {
-        _scrollBarUI._lines[line.getId()] = true;
-        _scrollBar.repaint();
-        _lines._changes[line.getId()] = line.getChange();
-        _lines._users[line.getId()] = line.getUser();
-        _lines._dates[line.getId()] = line.getDate();
-        _lines.fireTableRowsUpdated(line.getId(), line.getId());
-        _table.repaint();
+        _scrollBarUI.setLineFound(line.getId());
+        _model._changes[line.getId()] = line.getChange();
+        _model._users[line.getId()] = line.getUser();
+        _model._dates[line.getId()] = line.getDate();
+        _model.fireTableRowsUpdated(line.getId(), line.getId());
+        SwingBlame.this.repaint();
       }
     });
     synchronized(_lock) {
-      if (++_numDiscovered == _lines.getRowCount()) {
+      if (++_numDiscovered == _model.getRowCount()) {
         EventQueue.invokeLater(new Runnable() {
           public void run() {
             blameFinished();
@@ -119,10 +111,10 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
         blameStarted();
         IP4BlameLine[] lines = _blame.forPathNoStart(_pathField.getText());
         _scrollBarUI.setLines(lines);
-        _lines.setLines(lines);
-        _lines.fireTableDataChanged();
-        _table.repaint();
-        _blameThread = new Thread(new Runnable() {
+        _model.setLines(lines);
+        _model.fireTableDataChanged();
+        SwingBlame.this.repaint();
+        Thread blameThread = new Thread(new Runnable() {
           public void run() {
             long startTime = System.nanoTime();
             _blame.start();
@@ -130,7 +122,7 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
             System.out.println("blame ran in " + (runningTime / 1000 / 1000) + " ms");
           }
         });
-        _blameThread.start();
+        blameThread.start();
       } catch (IllegalArgumentException ex) {
         JOptionPane.showMessageDialog(this, ex.getMessage());
       }
@@ -149,126 +141,4 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
     _status.setVisible(false);
   }
 
-  class BlameScrollBarUI extends MetalScrollBarUI {
-    private boolean[] _lines = new boolean[0];
-
-    void setLines(IP4BlameLine[] lines) {
-      _lines = new boolean[lines.length];
-    }
-
-    @Override
-    protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
-      super.paintTrack(g, c, trackBounds);
-
-      int blockStart = -1;
-      int blockEnd = -1;
-      for (int i = 0; i < _lines.length; i++) {
-        if (_lines[i]) {
-          if (blockStart < 0) {
-            blockStart = i;
-          }
-          blockEnd = i;
-        }
-        else {
-          if (blockStart >= 0) {
-            paintBlock(g, trackBounds, blockStart, blockEnd);
-            blockStart = -1;
-          }
-        }
-      }
-      if (blockStart >= 0) {
-        paintBlock(g, trackBounds, blockStart, blockEnd);
-      }
-    }
-
-    private void paintBlock(Graphics g, Rectangle trackBounds, int start, int end) {
-      int x = trackBounds.x + 2;
-      int y = (int)((double)start / _lines.length * trackBounds.height) + trackBounds.y;
-      int width = 5;
-      int height = (int)((double)(end - start) / _lines.length * trackBounds.height);
-      g.setColor(COLOR_BLOCK_HIGHLIGHT);
-      g.fillRect(x, y, width, height);
-      g.setColor(COLOR_BLOCK);
-      g.fillRect(x, y, width - 1, height - 1);
-      g.setColor(COLOR_BLOCK_SHADOW);
-      g.drawLine(x, y, x + width - 1, y);
-      g.drawLine(x, y, x, y + height);
-    }
-  }
-
-  class BlameTableModel extends AbstractTableModel {
-    Integer[] _changes;
-    String[] _users;
-    String[] _dates;
-    String[] _lines = new String[0];
-
-    void setLines(IP4BlameLine[] lines) {
-      _lines = new String[lines.length];
-      for (int i = 0; i < lines.length; i++) {
-        _lines[i] = lines[i].getLine();
-      }
-      _changes = new Integer[lines.length];
-      _users = new String[lines.length];
-      _dates = new String[lines.length];
-    }
-
-    public int getRowCount() {
-      return _lines.length;
-    }
-
-    public int getColumnCount() {
-      return 5;
-    }
-
-    public String getColumnName(int columnIndex) {
-      switch (columnIndex) {
-      case 0:
-        return "User";
-      case 1:
-        return "Date";
-      case 2:
-        return "Change";
-      case 3:
-        return "Line";
-      case 4:
-        return "";
-      default:
-        return null;
-      }
-    }
-
-    public Class<?> getColumnClass(int columnIndex) {
-      switch (columnIndex) {
-      case 0:
-        return String.class;
-      case 1:
-        return String.class;
-      case 2:
-        return Integer.class;
-      case 3:
-        return Integer.class;
-      case 4:
-        return String.class;
-      default:
-        return null;
-      }
-    }
-
-    public Object getValueAt(int rowIndex, int columnIndex) {
-      switch (columnIndex) {
-      case 0:
-        return _users[rowIndex];
-      case 1:
-        return _dates[rowIndex];
-      case 2:
-        return _changes[rowIndex];
-      case 3:
-        return rowIndex;
-      case 4:
-        return _lines[rowIndex];
-      default:
-        return null;
-      }
-    }
-  }
 }
