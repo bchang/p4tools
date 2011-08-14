@@ -118,6 +118,9 @@ class P4Blame implements IP4Blame
       if (LogBacktracks) {
         print("${indent(recursionDepth)}  " + logEntry.PathRev)
       }
+      for (listener in _listeners) {
+        listener.status("Visiting " + filelog[i].PathRev)
+      }
 
       var origWorkingList = workingList.dup()
       var recordsChangedWithinPath = new HashSet<Record>()

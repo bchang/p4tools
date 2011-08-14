@@ -23,6 +23,9 @@ class TestBlame implements IP4BlameListener {
     _blame.start()
   }
 
+  override function status(status : String) {
+  }
+
   override function lineDiscovered(line : IP4BlameLine) {
     _discoveries.add(line.Id)
   }

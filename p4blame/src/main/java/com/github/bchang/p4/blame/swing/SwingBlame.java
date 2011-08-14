@@ -28,6 +28,7 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
   private JTable _table;
   private JScrollBar _scrollBar;
   private BlameScrollBarUI _scrollBarUI;
+  private JLabel _status;
   private Thread _blameThread;
   private int _numDiscovered;
 
@@ -46,6 +47,7 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
   public void go(String path) {
     this.setSize(800, 600);
     this.setLayout(new BorderLayout());
+
     JPanel topPanel = new JPanel();
     topPanel.setLayout(new BorderLayout());
     _pathField = new JTextField(path);
@@ -55,6 +57,7 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
     _goButton.addActionListener(this);
     topPanel.add(_goButton, BorderLayout.EAST);
     this.add(topPanel, BorderLayout.NORTH);
+
     _lines = new BlameTableModel();
     _table = new JTable(_lines);
     _table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
@@ -67,7 +70,20 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
     _scrollBar.setUI(_scrollBarUI);
     scrollPane.setVerticalScrollBar(_scrollBar);
     this.add(scrollPane, BorderLayout.CENTER);
+
+    _status = new JLabel();
+    _status.setVisible(false);
+    this.add(_status, BorderLayout.SOUTH);
+
     this.setVisible(true);
+  }
+
+  public void status(final String status) {
+    EventQueue.invokeLater(new Runnable() {
+      public void run() {
+        _status.setText(status);
+      }
+    });
   }
 
   public void lineDiscovered(final IP4BlameLine line) {
@@ -122,11 +138,13 @@ public class SwingBlame extends JFrame implements IP4BlameListener, ActionListen
   private void blameStarted() {
     _pathField.setEnabled(false);
     _goButton.setEnabled(false);
+    _status.setVisible(true);
   }
 
   private void blameFinished() {
     _pathField.setEnabled(true);
     _goButton.setEnabled(true);
+    _status.setVisible(false);
   }
 
   class BlameScrollBarUI extends MetalScrollBarUI {
