@@ -1,4 +1,8 @@
-package com.github.bchang.p4.blame;
+package com.github.bchang.p4.blame.swing;
+
+import com.github.bchang.p4.blame.IP4Blame;
+import com.github.bchang.p4.blame.IP4BlameLine;
+import com.github.bchang.p4.blame.IP4BlameListener;
 
 /**
  * Created by IntelliJ IDEA.
