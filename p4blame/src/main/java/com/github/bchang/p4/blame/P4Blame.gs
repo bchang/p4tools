@@ -198,6 +198,7 @@ class P4Blame implements IP4Blame
     var _change : int as Change
     var _date : String as Date
     var _user : String as User
+    var _path : String as Path
     var _lazyDescription = LazyVar<String>.make(\ -> {
       var desc : LinkedList<String>
       _p4.exec("change -o ${Change}", \ line -> {
@@ -225,6 +226,7 @@ class P4Blame implements IP4Blame
       Change = logEntry.Change
       Date = logEntry.Date
       User = logEntry.User
+      Path = logEntry.PathRev as String
     }
 
     override property get Description() : String {

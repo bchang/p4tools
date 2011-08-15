@@ -87,7 +87,8 @@ class BlameTableModel extends AbstractTableModel {
       var change = _changes[row]
       if (change != null) {
         table.ToolTipText = toHTML("Change " + change.Change +
-                " by " + change.User + " on " + change.Date + "\n\n" +
+                " by " + change.User + " on " + change.Date + "\n" +
+                change.Path + "\n\n" +
                 change.Description)
       }
     } else {
