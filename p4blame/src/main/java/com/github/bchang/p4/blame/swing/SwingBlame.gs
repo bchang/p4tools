@@ -20,6 +20,7 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
 
   var _pathField : JTextField
   var _chooserButton : JButton
+  var _blameButton : JButton
 
   var _model : BlameTableModel
   var _scrollBarUI : BlameScrollBarUI
@@ -58,7 +59,10 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
     topPanel.add(_pathField, BORDERLAYOUT_CENTER);
     _chooserButton = new JButton("...")
     _chooserButton.addActionListener(this)
-    topPanel.add(_chooserButton, BORDERLAYOUT_EAST)
+    topPanel.add(_chooserButton, BORDERLAYOUT_WEST)
+    _blameButton = new JButton("blame!")
+    _blameButton.addActionListener(this)
+    topPanel.add(_blameButton, BORDERLAYOUT_EAST)
     this.add(topPanel, BORDERLAYOUT_NORTH);
 
     _model = new BlameTableModel();
@@ -118,7 +122,7 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
   }
 
   override function actionPerformed(evt : ActionEvent) {
-    if (evt.Source == _pathField) {
+    if (evt.Source == _pathField || evt.Source == _blameButton) {
       startBlame()
     }
     else if (evt.Source == _chooserButton) {
@@ -133,6 +137,7 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
   private function startBlame() {
     _pathField.Enabled = false
     _chooserButton.Enabled = false
+    _blameButton.Enabled = false
     _status.Visible = true
 
     try {
@@ -162,6 +167,7 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
   private function blameFinished() {
     _pathField.Enabled = true
     _chooserButton.Enabled = true
+    _blameButton.Enabled = true
     _status.Visible = false
   }
 
