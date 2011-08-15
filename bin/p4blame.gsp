@@ -9,7 +9,7 @@ uses com.github.bchang.p4.blame.swing.SwingBlame
 uses java.lang.System
 
 function printHelp() {
-  print("Usage: ${CommandLineAccess.getCurrentProgram()} [-c path] [-h]")
+  print("Usage: gosu ${CommandLineAccess.getCurrentProgram()} [-c path] [-h]")
   print("Options:")
   print("    -g             start a graphical frame (this is the default if no arguments are given)")
   print("    -c <path>      run blame on the given depot or local path and print to console")
