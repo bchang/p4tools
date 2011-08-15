@@ -36,11 +36,7 @@ class P4Blame implements IP4Blame
 
   override function setup(pathStr : String) : String[] {
     var fstatDepotFile : String
-    try {
-      fstatDepotFile = _p4.fstat(pathStr)["depotFile"]
-    } catch (e : gw.util.CommandFailedException) {
-      throw new IllegalArgumentException("No such file in depot: ${pathStr}")
-    }
+    fstatDepotFile = _p4.fstat(pathStr)["depotFile"]
     if (fstatDepotFile == null) {
       throw new IllegalArgumentException("No such file in depot: ${pathStr}")
     }

@@ -158,7 +158,7 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
         }
       });
       blameThread.start();
-    } catch (ex : IllegalArgumentException) {
+    } catch (ex : Exception) {
       JOptionPane.showMessageDialog(this, ex.Message)
       blameFinished()
     }
