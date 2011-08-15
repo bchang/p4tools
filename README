@@ -1,0 +1,22 @@
+P4Blame will traverse a P4 graph history of a file and annotate each line with its change, date, author,
+and change description.  It will travel into other branches to fine the *true* origin of the change.
+
+This is known to work with the two latest versions of Gosu, 0.8.6 and 0.8.6.1.  Be sure you have your
+GOSU_HOME environment variable set to one of these Gosu instances, and run:
+
+    gosu p4blame.gsp
+
+Windows users have a p4blame.cmd script which will find the gosu executable in GOSU_HOME and start the program.
+
+Linux users can execute p4blame.gsp directly provided that they have the right version of the gosu executable
+in their path.
+
+Running the p4blame -h will provide the following help:
+
+Usage: ./p4blame.gsp [-c path] [-h]
+Options:
+    -g             start a graphical frame (this is the default if no arguments are given)
+    -c <path>      run blame on the given depot or local path and print to console
+    -h             show this help
+    -help              ''
+    --help             ''
