@@ -1,6 +1,7 @@
 package com.github.bchang.p4.blame.swing;
 
 uses com.github.bchang.p4.blame.IP4BlameLine
+uses com.github.bchang.p4.blame.IP4ChangeInfo
 
 uses javax.swing.*
 uses javax.swing.plaf.metal.MetalScrollBarUI
@@ -13,14 +14,10 @@ class BlameScrollBarUI extends MetalScrollBarUI {
   static var COLOR_BLOCK = new Color(153, 204, 255)
   static var COLOR_BLOCK_SHADOW = new Color(218, 255, 255)
 
-  var _lines = new boolean[0]
+  var _changes = new IP4ChangeInfo[0]
 
-  function setLines(lines : String[]) {
-    _lines = new boolean[lines.length];
-  }
-
-  function setLineFound(idx : int) {
-    _lines[idx] = true;
+  function reset(changes : IP4ChangeInfo[]) {
+    _changes = changes
   }
 
   override function paintTrack(g : Graphics, c : JComponent, bounds : Rectangle) {
@@ -28,8 +25,8 @@ class BlameScrollBarUI extends MetalScrollBarUI {
 
     var blockStart = -1
     var blockEnd = -1
-    for (line in _lines index i) {
-      if (line) {
+    for (change in _changes index i) {
+      if (change != null) {
         if (blockStart < 0) {
           blockStart = i;
         }
@@ -49,9 +46,9 @@ class BlameScrollBarUI extends MetalScrollBarUI {
 
   private function paintBlock(g : Graphics, bounds : Rectangle, start : int, end : int) {
     var x = bounds.X as int + 2
-    var y = (((start as double) / _lines.length * bounds.height) as int) + (bounds.Y as int)
+    var y = (((start as double) / _changes.length * bounds.height) as int) + (bounds.Y as int)
     var width = 5
-    var height = (((end - start) as double) / _lines.length * bounds.height) as int
+    var height = (((end - start) as double) / _changes.length * bounds.height) as int
     g.setColor(COLOR_BLOCK_HIGHLIGHT);
     g.fillRect(x, y, width, height);
     g.setColor(COLOR_BLOCK);

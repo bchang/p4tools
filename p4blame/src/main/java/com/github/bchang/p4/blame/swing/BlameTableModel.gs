@@ -11,15 +11,11 @@ uses javax.swing.table.AbstractTableModel
  */
 class BlameTableModel extends AbstractTableModel {
   var _lines = new String[0]
-  var _changes : IP4ChangeInfo[]
+  var _changes = new IP4ChangeInfo[0]
 
-  function setLines(lines : String[]) {
+  function reset(lines : String[], changes : IP4ChangeInfo[]) {
     _lines = lines;
-    _changes = new IP4ChangeInfo[lines.length];
-  }
-
-  function setChangeInfo(idx : int, change : IP4ChangeInfo) {
-    _changes[idx] = change;
+    _changes = changes
   }
 
   override property get RowCount() : int {
@@ -80,47 +76,5 @@ class BlameTableModel extends AbstractTableModel {
     default:
       return null;
     }
-  }
-
-  function maybeShowChangeInfo(table : JTable, row : int, col : int) {
-    if (0 <= col && col <=2) {
-      var change = _changes[row]
-      if (change != null) {
-        table.ToolTipText = toHTML("Change " + change.Change +
-                " by " + change.User + " on " + change.Date + "\n" +
-                change.Path + "\n\n" +
-                change.Description)
-      }
-    } else {
-      table.ToolTipText = null
-    }
-  }
-
-  private function toHTML(s : String) : String {
-    var sb = new StringBuilder()
-    sb.append("<html>");
-    for (c in s.toCharArray()) {
-      switch (c) {
-      case '>':
-        sb.append("&gt;");
-        break;
-      case '<':
-        sb.append("&lt;");
-        break;
-      case '"':
-        sb.append("&quot;");
-        break;
-      case '&':
-        sb.append("&amp;");
-        break;
-      case '\n':
-        sb.append("<br/>");
-        break;
-      default:
-        sb.append(c);
-      }
-    }
-    sb.append("<html>");
-    return sb.toString();
   }
 }

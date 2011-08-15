@@ -3,6 +3,7 @@ package com.github.bchang.p4.blame.swing;
 uses com.github.bchang.p4.blame.IP4Blame
 uses com.github.bchang.p4.blame.IP4BlameLine
 uses com.github.bchang.p4.blame.IP4BlameListener
+uses com.github.bchang.p4.blame.IP4ChangeInfo
 
 uses javax.swing.*
 uses java.awt.*
@@ -17,6 +18,9 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
 
   var _lock = new ReentrantLock()
   var _blame : IP4Blame
+
+  var _lines = new String[0]
+  var _changes = new IP4ChangeInfo[0]
 
   var _pathField : JTextField
   var _chooserButton : JButton
@@ -72,7 +76,7 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
         var p = e.getPoint()
         var row = table.rowAtPoint(p)
         var col = table.columnAtPoint(p)
-        _model.maybeShowChangeInfo(table, row, col);
+        maybeShowChangeInfo(table, row, col)
       }
     });
     table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
@@ -103,8 +107,7 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
   override function lineDiscovered(line : IP4BlameLine) {
     EventQueue.invokeLater(new Runnable() {
       override function run() {
-        _scrollBarUI.setLineFound(line.getId());
-        _model.setChangeInfo(line.getId(), line.getChangeInfo());
+        _changes[line.getId()] = line.ChangeInfo
         _model.fireTableRowsUpdated(line.getId(), line.getId());
         _me.repaint();
       }
@@ -144,9 +147,12 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
       using(_lock) {
         _numDiscovered = 0;
       }
-      var lines = _blame.setup(_pathField.getText());
-      _scrollBarUI.setLines(lines);
-      _model.setLines(lines);
+      _lines = _blame.setup(_pathField.getText())
+      _changes = new IP4ChangeInfo[_lines.length]
+
+      _scrollBarUI.reset(_changes)
+      _model.reset(_lines, _changes)
+
       _model.fireTableDataChanged();
       _me.repaint();
       var blameThread = new Thread(new Runnable() {
@@ -171,4 +177,45 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
     _status.Visible = false
   }
 
+  function maybeShowChangeInfo(table : JTable, row : int, col : int) {
+    if (0 <= col && col <=2) {
+      var change = _changes[row]
+      if (change != null) {
+        table.ToolTipText = toHTML("Change " + change.Change +
+                " by " + change.User + " on " + change.Date + "\n" +
+                change.Path + "\n\n" +
+                change.Description)
+      }
+    } else {
+      table.ToolTipText = null
+    }
+  }
+
+  private function toHTML(s : String) : String {
+    var sb = new StringBuilder()
+    sb.append("<html>");
+    for (c in s.toCharArray()) {
+      switch (c) {
+      case '>':
+        sb.append("&gt;");
+        break;
+      case '<':
+        sb.append("&lt;");
+        break;
+      case '"':
+        sb.append("&quot;");
+        break;
+      case '&':
+        sb.append("&amp;");
+        break;
+      case '\n':
+        sb.append("<br/>");
+        break;
+      default:
+        sb.append(c);
+      }
+    }
+    sb.append("<html>");
+    return sb.toString();
+  }
 }
