@@ -4,7 +4,7 @@ uses com.github.bchang.p4.blame.IP4Blame
 uses com.github.bchang.p4.blame.IP4BlameLine
 uses com.github.bchang.p4.blame.IP4BlameListener
 uses com.github.bchang.p4.blame.IP4ChangeInfo
-
+uses gw.lang.reflect.TypeSystem
 uses javax.swing.*
 uses java.awt.*
 uses java.awt.event.*
@@ -58,13 +58,15 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
     var topPanel = new JPanel()
     topPanel.Layout = new BorderLayout()
     _pathField = new JTextField(path);
-    _pathField.ToolTipText = "Enter a depot or file system path here."
+    _pathField.ToolTipText = "Enter a depot or file system path here"
     _pathField.addActionListener(this);
     topPanel.add(_pathField, BORDERLAYOUT_CENTER);
-    _chooserButton = new JButton("...")
+    _chooserButton = new JButton(new ImageIcon(TypeSystem.getResource("com/github/bchang/p4/blame/swing/Open16.gif")))
+    _chooserButton.ToolTipText = "Find a local file"
     _chooserButton.addActionListener(this)
     topPanel.add(_chooserButton, BORDERLAYOUT_WEST)
-    _blameButton = new JButton("blame!")
+    _blameButton = new JButton(new ImageIcon(TypeSystem.getResource("com/github/bchang/p4/blame/swing/Play16.gif")))
+    _blameButton.ToolTipText = "blame!"
     _blameButton.addActionListener(this)
     topPanel.add(_blameButton, BORDERLAYOUT_EAST)
     this.add(topPanel, BORDERLAYOUT_NORTH);
