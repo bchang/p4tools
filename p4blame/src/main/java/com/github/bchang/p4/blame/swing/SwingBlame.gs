@@ -177,7 +177,7 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
     _status.Visible = false
   }
 
-  function maybeShowChangeInfo(table : JTable, row : int, col : int) {
+  private function maybeShowChangeInfo(table : JTable, row : int, col : int) {
     if (0 <= col && col <=2) {
       var change = _changes[row]
       if (change != null) {
