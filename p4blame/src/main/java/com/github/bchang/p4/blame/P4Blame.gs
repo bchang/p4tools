@@ -5,6 +5,7 @@ uses java.lang.*
 uses java.util.*
 uses gw.util.AutoMap
 uses gw.util.Pair
+uses gw.util.concurrent.LazyVar
 
 // need caching
 // better error handling for entry point, handle revs
@@ -201,15 +202,7 @@ class P4Blame implements IP4Blame
     var _change : int as Change
     var _date : String as Date
     var _user : String as User
-    var _description : String as Description
-    construct(logEntry : FileLog.Entry) {
-      Change = logEntry.Change
-      Date = logEntry.Date
-      User = logEntry.User
-      Description = buildDescription()
-    }
-
-    private function buildDescription() : String {
+    var _lazyDescription = LazyVar<String>.make(\ -> {
       var desc : LinkedList<String>
       _p4.exec("change -o ${Change}", \ line -> {
         if (desc != null) {
@@ -230,6 +223,16 @@ class P4Blame implements IP4Blame
       var descBuilder = new StringBuilder()
       descBuilder.append(desc.join("\n"))
       return descBuilder.toString()
+    })
+
+    construct(logEntry : FileLog.Entry) {
+      Change = logEntry.Change
+      Date = logEntry.Date
+      User = logEntry.User
+    }
+
+    override property get Description() : String {
+      return _lazyDescription.get()
     }
   }
 
