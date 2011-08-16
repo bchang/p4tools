@@ -46,9 +46,9 @@ class BlameScrollBarUI extends MetalScrollBarUI {
 
   private function paintBlock(g : Graphics, bounds : Rectangle, start : int, end : int) {
     var x = bounds.X as int + 2
-    var y = (((start as double) / _changes.length * bounds.height) as int) + (bounds.Y as int)
+    var y = (bounds.Height * start / _changes.length + bounds.Y) as int
     var width = 5
-    var height = (((end - start) as double) / _changes.length * bounds.height) as int
+    var height = (bounds.Height * (end - start) / _changes.length) as int
     g.setColor(COLOR_BLOCK_HIGHLIGHT);
     g.fillRect(x, y, width, height);
     g.setColor(COLOR_BLOCK);
