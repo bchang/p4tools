@@ -18,7 +18,8 @@ function printHelp() {
   print("    --help             ''")
 }
 
-var consoleModePath : String
+var consoleMode : boolean
+var path : String
 
 var i = 0
 while (true) {
@@ -35,10 +36,14 @@ while (true) {
       print("-c argument should be followed by a path - run \"${CommandLineAccess.getCurrentProgram()} -help\" for details")
       System.exit(-1)
     }
+    consoleMode = true
     i++
-    consoleModePath = CommandLineAccess.getRawArgs()[i]
+    path = CommandLineAccess.getRawArgs()[i]
   }
   else if (arg == "-g") {
+  }
+  else if (i == CommandLineAccess.getRawArgs().Count - 1) {
+    path = CommandLineAccess.getRawArgs()[i]
   }
   else {
     print("unrecognized option: ${arg} - run \"${CommandLineAccess.getCurrentProgram()} -help\" for details")
@@ -49,10 +54,10 @@ while (true) {
 
 var p4 = P4Factory.createP4()
 var blame = new P4Blame(p4)
-if (consoleModePath != null) {
-  blame.forPath(consoleModePath).display()
+if (consoleMode) {
+  blame.forPath(path).display()
 }
 else {
-  var frame = new SwingBlame(blame, "")
+  var frame = new SwingBlame(blame, path)
   frame.Visible = true
 }

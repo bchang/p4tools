@@ -57,7 +57,7 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
 
     var topPanel = new JPanel()
     topPanel.Layout = new BorderLayout()
-    _pathField = new JTextField(path);
+    _pathField = new JTextField(path != null ? path : "")
     _pathField.ToolTipText = "Enter a depot or file system path here"
     _pathField.addActionListener(this);
     topPanel.add(_pathField, BORDERLAYOUT_CENTER);
@@ -96,6 +96,14 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
     _status = new JLabel();
     _status.Visible = false
     this.add(_status, BORDERLAYOUT_SOUTH);
+
+    if (path != null) {
+      EventQueue.invokeLater(new Runnable() {
+        override function run() {
+          startBlame()
+        }
+      })
+    }
   }
 
   override function status(status : String) {
