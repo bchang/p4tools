@@ -13,7 +13,7 @@ class PathRange extends PathRev {
     return Path + "#" + Rev + ",#" + EndRev
   }
 
-  property get EndPathRev() : PathRev {
+  override property get EndPathRev() : PathRev {
     return P4Factory.createPath(Path, EndRev)
   }
 }

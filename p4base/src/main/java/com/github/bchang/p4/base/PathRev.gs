@@ -12,4 +12,8 @@ class PathRev extends Path {
   override function toString() : String {
     return Path + "#" + Rev
   }
+
+  property get EndPathRev() : PathRev {
+    return this
+  }
 }

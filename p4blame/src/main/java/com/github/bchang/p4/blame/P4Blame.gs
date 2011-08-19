@@ -14,7 +14,7 @@ class P4Blame implements IP4Blame
   var _p4 : P4Client
   var _logBacktracks : boolean as LogBacktracks = false
   var _listeners = new ArrayList<IP4BlameListener>()
-  var _path : Path
+  var _path : PathRev
   var _recordList : RecordList
 
   var _filelogCache : Map<String, List<FileLog.Entry>> = {}
@@ -35,17 +35,16 @@ class P4Blame implements IP4Blame
   }
 
   override function setup(pathStr : String) : String[] {
-    var fstatDepotFile : String
-    fstatDepotFile = _p4.fstat(pathStr)["depotFile"]
+    var fstat = _p4.fstat(pathStr)
+    var fstatDepotFile = fstat["depotFile"]
     if (fstatDepotFile == null) {
       throw new IllegalArgumentException("No such file in depot: ${pathStr}")
     }
-    _path = P4Factory.createPath(pathStr)
     if (_path typeis PathRev) {
       _path = P4Factory.createPath(fstatDepotFile, _path.Rev)
     }
     else {
-      _path = P4Factory.createPath(fstatDepotFile)
+      _path = P4Factory.createPath(fstatDepotFile, fstat["headRev"].toInt())
     }
     var lines = _p4.print(_path)
     var records = new ArrayList<Record>()
@@ -57,7 +56,7 @@ class P4Blame implements IP4Blame
   }
 
   override function start() {
-    backtrackWithinPath(_recordList, _path, 0)
+    backtrackFromNode(_recordList, _path)
   }
 
   function forPath(pathStr : String) : RecordList {
@@ -92,96 +91,72 @@ class P4Blame implements IP4Blame
     return _diff2Cache[new Pair<Path, Path>(left, right)]
   }
 
-  private function backtrackWithinPath(recordList : RecordList, pathrev : Path, recursionDepth : int) {
-    if (LogBacktracks) {
-      print("${indent(recursionDepth)}backtracking into: ${pathrev}")
-    }
-    var workingList = recordList.dup()
-    var filelog = filelog(pathrev)
+  private function backtrackFromNode(recordList : RecordList, pathrev : PathRev) {
+    var traversalQueue = new LinkedList<Pair<RecordList, PathRev>>()
+    traversalQueue.add(new Pair<RecordList, PathRev>(recordList, pathrev))
+    eachInTreeBreadthFirst(traversalQueue)
+  }
 
-    for (logEntry in filelog index i) {
-      if (recordList.isComplete()) {
-        break
-      }
-      if (LogBacktracks) {
-        print("${indent(recursionDepth)}  " + logEntry.PathRev)
-      }
-      for (listener in _listeners) {
-        listener.status("Visiting " + filelog[i].PathRev)
-      }
+  private function eachInTreeBreadthFirst(traversalQueue : LinkedList<Pair<RecordList, PathRev>>) {
 
-      var origWorkingList = workingList.dup()
-      var recordsChangedWithinPath = new HashSet<Record>()
+    while (traversalQueue.Count > 0) {
+      var pair = traversalQueue.removeFirst()
+      var recordList = pair.First
+      var pathrev = pair.Second
 
-      if (isFirstRevisionForPath(logEntry)) {
-        for (rec in workingList) {
-          if (rec != null) {
-            recordsChangedWithinPath.add(rec)
-          }
-        }
-      }
-      else {
-        for (diffEntry in diff2(filelog[i].PathRev, filelog[i + 1].PathRev)) {
-          // simulate the change (backwards)
-          recordsChangedWithinPath.addAll(backtrack(workingList, diffEntry))
+      var records = new HashSet<Record>()
+      for (rec in recordList) {
+        if (rec != null) {
+          records.add(rec)
         }
       }
 
-      for (source in logEntry.Sources) {
-        backtrackIntoIntegSource(origWorkingList.dup(), source, logEntry, recordsChangedWithinPath, recursionDepth)
+      var logEntry = filelog(pathrev)[0]
+      var sourcePathRevs = pathRev.combinedSourcePathRevs(logEntry)
+      var workingLists = new RecordList[sourcePathRevs.Count]
+      for (sourcePathRev in sourcePathRevs index i) {
+        workingLists[i] = backtrack(recordList, pathrev, sourcePathRev, records)
       }
-
-      if (recordsChangedWithinPath.Count > 0) {
+      if (records.Count > 0) {
         var changeInfo = new ChangeInfo(logEntry)
-        for (rec in recordsChangedWithinPath) {
+        for (rec in records) {
           rec.discovered(logEntry, changeInfo)
           for (listener in _listeners) {
             listener.lineDiscovered(rec)
           }
         }
       }
-    }
-  }
 
-  function backtrackIntoIntegSource(forkedList : RecordList, sourceDetail : FileLog.Entry.Detail, logEntry : FileLog.Entry, recordsChangedWithinPath : HashSet<Record>, recursionDepth : int) {
-    var sourcePathRev = sourceDetail.PathRev
-    if (sourcePathRev typeis PathRange) {
-      sourcePathRev = sourcePathRev.EndPathRev
-    }
-
-    // mask unflagged lines, to be ignored when exploring the source branch
-    for (rec in forkedList index i) {
-      if (rec != null && !recordsChangedWithinPath.contains(rec)) {
-        forkedList.set(i, null)
+      for (sourcePathRev in sourcePathRevs index i) {
+        if (!workingLists[i].isComplete()) {
+          traversalQueue.add(new Pair<RecordList, PathRev>(workingLists[i], sourcePathRev))
+        }
       }
     }
 
-    for (diffEntry in diff2(logEntry.PathRev, sourcePathRev)) {
-      backtrack(forkedList, diffEntry)
+  }
+
+  private function backtrack(recordList : RecordList, pathrev : PathRev, sourcePathRev : PathRev, records : HashSet<Record>) : RecordList {
+    var workingList = recordList.dup()
+    for (diffEntry in diff2(pathrev, sourcePathRev)) {
+      if (diffEntry.Op == "c" or diffEntry.Op == "d") {
+        for (n in diffEntry.LeftRange) {
+          var indexToRemove = (diffEntry.Op == "d") ? diffEntry.RightRange.start : diffEntry.RightRange.start - 1
+          workingList.remove(indexToRemove)
+        }
+      }
+      if (diffEntry.Op == "c" or diffEntry.Op == "a") {
+        for (n in diffEntry.RightRange) {
+          workingList.add(n - 1, null)
+        }
+      }
     }
-    for (rec in forkedList) {
+    for (rec in workingList) {
       if (rec != null) {
-        recordsChangedWithinPath.remove(rec)
+        records.remove(rec)
       }
     }
-    backtrackWithinPath( forkedList, sourcePathRev, recursionDepth + 1 )
-  }
-
-  private function backtrack(records : RecordList, diffEntry : Diff2.Entry) : List<Record> {
-    var removedRecs = new ArrayList<Record>()
-    if (diffEntry.Op == "c" or diffEntry.Op == "d") {
-      for (n in diffEntry.LeftRange) {
-        var indexToRemove = (diffEntry.Op == "d") ? diffEntry.RightRange.start : diffEntry.RightRange.start - 1
-        var removedRec = records.remove(indexToRemove)
-        if (removedRec != null) removedRecs.add(removedRec)
-      }
-    }
-    if (diffEntry.Op == "c" or diffEntry.Op == "a") {
-      for (n in diffEntry.RightRange) {
-        records.add(n - 1, null)
-      }
-    }
-    return removedRecs
+    return workingList
   }
 
   private function isFirstRevisionForPath(logEntry : FileLog.Entry) : boolean {
