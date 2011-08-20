@@ -132,7 +132,7 @@ class TestBlameTest extends AbstractP4Test {
     var testBlame = new TestBlame(blame)
     var lines = testBlame.setup(fileA.Path)
     testBlame.start()
-    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {2, 0, 1})
+    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {1, 2, 0})
     assertEquals(change3, testBlame.Results[0].ChangeInfo.Change)
     assertEquals(change1, testBlame.Results[1].ChangeInfo.Change)
     assertEquals(change4, testBlame.Results[2].ChangeInfo.Change)
@@ -151,8 +151,8 @@ class TestBlameTest extends AbstractP4Test {
         "2\n" +
         "c\n")
     var change4 = editFileAndSubmit(fileA,
-        "a\n" +
-        "2\n" +
+        "1\n" +
+        "b\n" +
         "3\n")
     /* var change5 = */ integFileAndSubmit(fileB, fileA)
 
@@ -160,9 +160,9 @@ class TestBlameTest extends AbstractP4Test {
     var testBlame = new TestBlame(blame)
     var lines = testBlame.setup(fileA.Path)
     testBlame.start()
-    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {2, 0, 1})
-    assertEquals(change4, testBlame.Results[0].ChangeInfo.Change)
-    assertEquals(change1, testBlame.Results[1].ChangeInfo.Change)
+    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {1, 2, 0})
+    assertEquals(change1, testBlame.Results[0].ChangeInfo.Change)
+    assertEquals(change4, testBlame.Results[1].ChangeInfo.Change)
     assertEquals(change3, testBlame.Results[2].ChangeInfo.Change)
   }
 
@@ -188,7 +188,7 @@ class TestBlameTest extends AbstractP4Test {
     var testBlame = new TestBlame(blame)
     var lines = testBlame.setup(fileA.Path)
     testBlame.start()
-    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {0, 2, 1})
+    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {1, 0, 2})
     assertEquals(change4, testBlame.Results[0].ChangeInfo.Change)
     assertEquals(change1, testBlame.Results[1].ChangeInfo.Change)
     assertEquals(change3, testBlame.Results[2].ChangeInfo.Change)
