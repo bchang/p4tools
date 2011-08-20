@@ -104,7 +104,7 @@ class TestBlameTest extends AbstractP4Test {
     var testBlame = new TestBlame(blame)
     var lines = testBlame.setup(fileA.Path)
     testBlame.start()
-    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {0, 2, 1})
+    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {1, 0, 2})
     assertEquals(change3, testBlame.Results[0].ChangeInfo.Change)
     assertEquals(change1, testBlame.Results[1].ChangeInfo.Change)
     assertEquals(change3, testBlame.Results[2].ChangeInfo.Change)
