@@ -109,4 +109,114 @@ class TestBlameTest extends AbstractP4Test {
     assertEquals(change1, testBlame.Results[1].ChangeInfo.Change)
     assertEquals(change3, testBlame.Results[2].ChangeInfo.Change)
   }
+
+  function testBlameForFileAcrossBranches2() {
+    var fileA = newUniqueFile()
+    var fileB = newUniqueFile()
+    var change1 = createFileAndSubmit(fileA,
+        "1\n" +
+        "2\n" +
+        "3\n")
+    /* var change2 = */ integFileAndSubmit(fileA, fileB)
+    var change3 = editFileAndSubmit(fileB,
+        "a\n" +
+        "2\n" +
+        "3\n")
+    var change4 = editFileAndSubmit(fileB,
+        "a\n" +
+        "2\n" +
+        "c\n")
+    /* var change5 = */ integFileAndSubmit(fileB, fileA)
+
+    var blame = new P4Blame(P4)
+    var testBlame = new TestBlame(blame)
+    var lines = testBlame.setup(fileA.Path)
+    testBlame.start()
+    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {2, 0, 1})
+    assertEquals(change3, testBlame.Results[0].ChangeInfo.Change)
+    assertEquals(change1, testBlame.Results[1].ChangeInfo.Change)
+    assertEquals(change4, testBlame.Results[2].ChangeInfo.Change)
+  }
+
+  function testBlameForFileAcrossBranches3() {
+    var fileA = newUniqueFile()
+    var fileB = newUniqueFile()
+    var change1 = createFileAndSubmit(fileA,
+        "1\n" +
+        "2\n" +
+        "3\n")
+    /* var change2 = */ integFileAndSubmit(fileA, fileB)
+    var change3 = editFileAndSubmit(fileB,
+        "1\n" +
+        "2\n" +
+        "c\n")
+    var change4 = editFileAndSubmit(fileA,
+        "a\n" +
+        "2\n" +
+        "3\n")
+    /* var change5 = */ integFileAndSubmit(fileB, fileA)
+
+    var blame = new P4Blame(P4)
+    var testBlame = new TestBlame(blame)
+    var lines = testBlame.setup(fileA.Path)
+    testBlame.start()
+    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {2, 0, 1})
+    assertEquals(change4, testBlame.Results[0].ChangeInfo.Change)
+    assertEquals(change1, testBlame.Results[1].ChangeInfo.Change)
+    assertEquals(change3, testBlame.Results[2].ChangeInfo.Change)
+  }
+
+  function testBlameForFileAcrossBranches4() {
+    var fileA = newUniqueFile()
+    var fileB = newUniqueFile()
+    var change1 = createFileAndSubmit(fileA,
+        "1\n" +
+        "2\n" +
+        "3\n")
+    /* var change2 = */ integFileAndSubmit(fileA, fileB)
+    var change3 = editFileAndSubmit(fileB,
+        "1\n" +
+        "2\n" +
+        "c\n")
+    var change4 = editFileAndSubmit(fileB,
+        "a\n" +
+        "2\n" +
+        "c\n")
+    /* var change5 = */ integFileAndSubmit(fileB, fileA)
+
+    var blame = new P4Blame(P4)
+    var testBlame = new TestBlame(blame)
+    var lines = testBlame.setup(fileA.Path)
+    testBlame.start()
+    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {0, 2, 1})
+    assertEquals(change4, testBlame.Results[0].ChangeInfo.Change)
+    assertEquals(change1, testBlame.Results[1].ChangeInfo.Change)
+    assertEquals(change3, testBlame.Results[2].ChangeInfo.Change)
+  }
+
+  // this involves an edit during a merge
+  function testBlameForFileAcrossBranches5() {
+    var fileA = newUniqueFile()
+    var fileB = newUniqueFile()
+    var change1 = createFileAndSubmit(fileA,
+        "1\n" +
+        "2\n" +
+        "3\n")
+    /* var change2 = */ integFileAndSubmit(fileA, fileB)
+    integFile(fileB, fileA)
+    var change3 = editFileAndSubmit(fileA,
+        "1\n" +
+        "2\n" +
+        "c\n")
+
+    var blame = new P4Blame(P4)
+    var testBlame = new TestBlame(blame)
+    var lines = testBlame.setup(fileA.Path)
+    testBlame.start()
+    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {2, 0, 1})
+    assertEquals(change1, testBlame.Results[0].ChangeInfo.Change)
+    assertEquals(change1, testBlame.Results[1].ChangeInfo.Change)
+    assertEquals(change3, testBlame.Results[2].ChangeInfo.Change)
+  }
+
 }
