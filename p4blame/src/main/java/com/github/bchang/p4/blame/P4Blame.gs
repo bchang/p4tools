@@ -92,81 +92,102 @@ class P4Blame implements IP4Blame
   }
 
   private function backtrackFromNode(recordList : RecordList, pathrev : PathRev) {
-    var traversalQueue = new LinkedList<Pair<RecordList, PathRev>>()
-    traversalQueue.add(new Pair<RecordList, PathRev>(recordList, pathrev))
-    eachInTreeBreadthFirst(traversalQueue)
+    var traversalQ = new LinkedList<HistoryGraphNode>()
+    traversalQ.add(new HistoryGraphNode(recordList, pathrev))
+    eachInGraphBreadthFirst(traversalQ)
   }
 
-  private function eachInTreeBreadthFirst(traversalQueue : LinkedList<Pair<RecordList, PathRev>>) {
+  private function eachInGraphBreadthFirst(traversalQ : LinkedList<HistoryGraphNode>) {
+    while (traversalQ.Count > 0) {
+      var node = traversalQ.removeFirst()
 
-    while (traversalQueue.Count > 0) {
-      var pair = traversalQueue.removeFirst()
-      var recordList = pair.First
-      var pathrev = pair.Second
+      var sourceNodes = node.getSourceNodes()
+      for (sourceNode in sourceNodes) {
+        sourceNode.backtrackFrom(node)
+      }
 
+      node.reportDiscoveries()
+
+      for (sourceNode in sourceNodes) {
+        if (sourceNode.shouldContinue()) {
+          traversalQ.add(sourceNode)
+        }
+      }
+    }
+  }
+
+  private class HistoryGraphNode {
+    var _recordList : RecordList
+    var _logEntry : FileLog.Entry
+    var _pathrev : PathRev as PathRev
+
+    var _records = LazyVar<HashSet<Record>>.make(\ -> {
       var records = new HashSet<Record>()
-      for (rec in recordList) {
+      for (rec in _recordList) {
         if (rec != null) {
           records.add(rec)
         }
       }
+      return records
+    })
 
-      var logEntry = filelog(pathrev)[0]
-      var sourcePathRevs = pathRev.combinedSourcePathRevs(logEntry)
-      var workingLists = new RecordList[sourcePathRevs.Count]
-      for (sourcePathRev in sourcePathRevs index i) {
-        workingLists[i] = backtrack(recordList, pathrev, sourcePathRev, records)
-      }
-      if (records.Count > 0) {
-        var changeInfo = new ChangeInfo(logEntry)
-        for (rec in records) {
-          rec.discovered(logEntry, changeInfo)
+    property get RecordsForNode() : HashSet<Record> {
+      return _records.get()
+    }
+
+    construct(cRecordList : RecordList, cPathrev : PathRev) {
+      _recordList = cRecordList
+      _pathrev = cPathRev
+      _logEntry = filelog(pathrev)[0]
+    }
+
+    function shouldContinue() : boolean {
+      return !_recordList.isComplete()
+    }
+
+    function reportDiscoveries() {
+      if (RecordsForNode.Count > 0) {
+        var changeInfo = new ChangeInfo(_logEntry)
+        for (rec in RecordsForNode) {
+          rec.discovered(_logEntry, changeInfo)
           for (listener in _listeners) {
             listener.lineDiscovered(rec)
           }
         }
       }
+    }
 
-      for (sourcePathRev in sourcePathRevs index i) {
-        if (!workingLists[i].isComplete()) {
-          traversalQueue.add(new Pair<RecordList, PathRev>(workingLists[i], sourcePathRev))
+    function getSourceNodes() : List<HistoryGraphNode> {
+      var ret = new ArrayList<HistoryGraphNode>()
+      if (pathrev.Rev > 1) {
+        ret.add(new HistoryGraphNode(_recordList.dup(), P4Factory.createPath(pathrev.Path, pathrev.Rev - 1)))
+      }
+      for (sourceDetail in _logEntry.Sources) {
+        ret.add(new HistoryGraphNode(_recordList.dup(), sourceDetail.PathRev.EndPathRev))
+      }
+      return ret
+    }
+
+    function backtrackFrom(targetNode : HistoryGraphNode) {
+      for (diffEntry in diff2(targetNode.PathRev, _pathrev)) {
+        if (diffEntry.Op == "c" or diffEntry.Op == "d") {
+          for (n in diffEntry.LeftRange) {
+            var indexToRemove = (diffEntry.Op == "d") ? diffEntry.RightRange.start : diffEntry.RightRange.start - 1
+            _recordList.remove(indexToRemove)
+          }
+        }
+        if (diffEntry.Op == "c" or diffEntry.Op == "a") {
+          for (n in diffEntry.RightRange) {
+            _recordList.add(n - 1, null)
+          }
+        }
+      }
+      for (rec in _recordList) {
+        if (rec != null) {
+          targetNode.RecordsForNode.remove(rec)
         }
       }
     }
-
-  }
-
-  private function backtrack(recordList : RecordList, pathrev : PathRev, sourcePathRev : PathRev, records : HashSet<Record>) : RecordList {
-    var workingList = recordList.dup()
-    for (diffEntry in diff2(pathrev, sourcePathRev)) {
-      if (diffEntry.Op == "c" or diffEntry.Op == "d") {
-        for (n in diffEntry.LeftRange) {
-          var indexToRemove = (diffEntry.Op == "d") ? diffEntry.RightRange.start : diffEntry.RightRange.start - 1
-          workingList.remove(indexToRemove)
-        }
-      }
-      if (diffEntry.Op == "c" or diffEntry.Op == "a") {
-        for (n in diffEntry.RightRange) {
-          workingList.add(n - 1, null)
-        }
-      }
-    }
-    for (rec in workingList) {
-      if (rec != null) {
-        records.remove(rec)
-      }
-    }
-    return workingList
-  }
-
-  private function isFirstRevisionForPath(logEntry : FileLog.Entry) : boolean {
-    return logEntry.Op == "add" or logEntry.Op == "branch"
-  }
-
-  private function indent(n : int) : String {
-    var bytes = new byte[n << 3]
-    Arrays.fill(bytes, 32 as byte)
-    return new String(bytes)
   }
 
   class ChangeInfo implements IP4ChangeInfo {
