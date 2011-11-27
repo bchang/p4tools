@@ -1,5 +1,6 @@
 package com.github.bchang.p4.base
-uses gw.util.IntegerRange
+
+uses gw.lang.reflect.interval.IntegerInterval
 
 class Diff2Test extends AbstractP4Test {
 
@@ -88,9 +89,9 @@ class Diff2Test extends AbstractP4Test {
     assertEquals(rightLines, diffEntry.RightLines)
   }
 
-  private function assertIntegerRange(expectedStart : int, expectedEnd : int, range : IntegerRange) {
-    assertEquals(expectedStart, range.start)
-    assertEquals(expectedEnd, range.end)
-    assertEquals(1, range.step)
+  private function assertIntegerRange(expectedStart : int, expectedEnd : int, range : IntegerInterval) {
+    assertEquals(expectedStart, range.first())
+    assertEquals(expectedEnd, range.last())
+    assertEquals(1, range.Step)
   }
 }

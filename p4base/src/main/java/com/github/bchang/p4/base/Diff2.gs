@@ -1,6 +1,6 @@
 package com.github.bchang.p4.base
-uses gw.util.IntegerRange
-uses java.util.List
+
+uses gw.lang.reflect.interval.IntegerInterval
 
 interface Diff2 {
 
@@ -8,8 +8,8 @@ interface Diff2 {
 
   static interface Entry {
     property get Op() : String
-    property get LeftRange() : IntegerRange
-    property get RightRange() : IntegerRange
+    property get LeftRange() : IntegerInterval
+    property get RightRange() : IntegerInterval
     property get LeftLines() : List<String>
     property get RightLines() : List<String>
   }

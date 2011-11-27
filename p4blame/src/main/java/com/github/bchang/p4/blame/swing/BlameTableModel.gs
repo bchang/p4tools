@@ -6,6 +6,7 @@ uses gw.lang.reflect.java.IJavaType
 uses java.lang.*
 uses javax.swing.*
 uses javax.swing.table.AbstractTableModel
+uses gw.lang.reflect.java.JavaTypes
 
 /**
  */
@@ -46,15 +47,15 @@ class BlameTableModel extends AbstractTableModel {
   override function getColumnClass(columnIndex : int) : Class<?> {
     switch (columnIndex) {
     case 0:
-      return IJavaType.STRING.IntrinsicClass
+      return JavaTypes.STRING().BackingClass
     case 1:
-      return IJavaType.STRING.IntrinsicClass
+      return JavaTypes.STRING().BackingClass
     case 2:
-      return IJavaType.INTEGER.IntrinsicClass
+      return JavaTypes.INTEGER().BackingClass
     case 3:
-      return IJavaType.INTEGER.IntrinsicClass
+      return JavaTypes.INTEGER().BackingClass
     case 4:
-      return IJavaType.STRING.IntrinsicClass
+      return JavaTypes.STRING().BackingClass
     default:
       return null;
     }
