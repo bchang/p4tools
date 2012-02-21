@@ -21,7 +21,7 @@ class Diff2Impl extends AbstractOperation implements Diff2 {
     super(client)
   }
 
-  override function on( left : Path, right : Path ) : List<EntryImpl> {
+  override function run( left : Path, right : Path ) : List<EntryImpl> {
     if (left typeis PathRange or right typeis PathRange) {
       throw "cannot do diff operation on a path range"
     }

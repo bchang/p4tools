@@ -12,7 +12,7 @@ class PrintImpl extends AbstractOperation implements Print {
   var _list : List<String>
   var _firstLine = true
 
-  override function on( path : Path ) : List<String> {
+  override function run( path : Path ) : List<String> {
     _path = path
     _list = {}
     run()

@@ -36,7 +36,7 @@ class P4Blame implements IP4Blame
 
   override function setup(pathStr : String) : String[] {
     var fstatDepotFile : String
-    fstatDepotFile = _p4.fstat(pathStr)["depotFile"]
+    fstatDepotFile = _p4.fstat(pathStr.asPath())["depotFile"]
     if (fstatDepotFile == null) {
       throw new IllegalArgumentException("No such file in depot: ${pathStr}")
     }
@@ -143,7 +143,7 @@ class P4Blame implements IP4Blame
     }
   }
 
-  function backtrackIntoIntegSource(forkedList : RecordList, sourceDetail : FileLog.Entry.Detail, logEntry : FileLog.Entry, recordsChangedWithinPath : HashSet<Record>, recursionDepth : int) {
+  function backtrackIntoIntegSource(forkedList : RecordList, sourceDetail : FileLog.EntryDetail, logEntry : FileLog.Entry, recordsChangedWithinPath : HashSet<Record>, recursionDepth : int) {
     var sourcePathRev = sourceDetail.PathRev
     if (sourcePathRev typeis PathRange) {
       sourcePathRev = sourcePathRev.EndPathRev

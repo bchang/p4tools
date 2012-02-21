@@ -19,11 +19,13 @@ public interface FileLog {
     String getOp();
     String getDate();
     String getUser();
+    List<? extends EntryDetail> getSources();
+    List<? extends EntryDetail> getTargets();
+  }
 
-    static interface Detail {
-      String getSubOp();
-      String getDirection();
-      PathRev getPathRev();
-    }
+  static interface EntryDetail {
+    String getSubOp();
+    String getDirection();
+    PathRev getPathRev();
   }
 }

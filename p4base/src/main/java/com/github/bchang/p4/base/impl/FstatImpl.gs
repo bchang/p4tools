@@ -15,7 +15,7 @@ class FstatImpl extends AbstractOperation implements Fstat {
     super(client)
   }
 
-  override function on( path : Path ) : Map<String,String> {
+  override function run( path : Path ) : Map<String,String> {
     _path = path
     _map = {}
     run()
