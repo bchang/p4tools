@@ -22,18 +22,23 @@ abstract class AbstractP4Test extends TestClass {
   }
 
   function createP4() {
-    var p4dPath = java.lang.System.getenv()["P4D"]
-    if (p4dPath == null) {
-      throw "please set an environment variable P4D pointing to your p4d executable"
-    }
-    _p4d = new File(p4dPath)
-
-    tryToKillP4D(false)
-
     var serverHost = "localhost"
     var serverPort = 9999 // nonprivileged port so it doesn't require root
     var serverRoot = new File(_tmpDir, "server")
     var client = "P4TestClient"
+
+    _p4 = P4Factory.createP4(serverHost, serverPort, client, null, true, true)
+
+    var p4dPath = java.lang.System.getenv()["P4D"]
+    if (p4dPath == null) {
+      p4dPath = java.lang.System.getProperty("p4d")
+    }
+    if (p4dPath == null) {
+      throw "please set an environment variable P4D pointing to your p4d executable"
+    }
+
+    _p4d = new File(p4dPath)
+    tryToKillP4D(false)
 
     // Start server
     serverRoot.mkdirs()
@@ -43,7 +48,6 @@ abstract class AbstractP4Test extends TestClass {
     process.start()
 
     // Create one client
-    _p4 = P4Factory.createP4(serverHost, serverPort, client, null, true, true)
     _clientRoot.mkdirs()
 
     for (i in 0..9) {
@@ -66,9 +70,12 @@ abstract class AbstractP4Test extends TestClass {
   private function tryToKillP4D(failIfNoKill : boolean) {
     // Kill any previously running server
     try {
+      _p4.run("admin stop")
+/*
       Shell.exec("killall ${_p4d.Name}")
 
       print("Waiting 1 second for daemon to die...")
+*/
       Thread.sleep(1000)
     }
     catch (e : CommandFailedException) {
