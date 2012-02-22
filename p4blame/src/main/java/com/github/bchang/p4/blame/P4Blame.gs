@@ -5,7 +5,8 @@ uses java.lang.*
 uses java.util.*
 uses gw.util.AutoMap
 uses gw.util.Pair
-uses gw.util.concurrent.LazyVar
+uses gw.lang.reflect.interval.IntegerInterval
+uses gw.util.concurrent.LocklessLazyVar
 
 // need caching
 // better error handling for entry point, handle revs
@@ -35,7 +36,7 @@ class P4Blame implements IP4Blame
   }
 
   override function setup(pathStr : String) : String[] {
-    var fstat = _p4.fstat(pathStr)
+    var fstat = _p4.fstat(pathStr.asPath())
     var fstatDepotFile = fstat["depotFile"]
     if (fstatDepotFile == null) {
       throw new IllegalArgumentException("No such file in depot: ${pathStr}")
@@ -79,7 +80,7 @@ class P4Blame implements IP4Blame
     if (pathrev typeis PathRev and pathrev.Rev > 0) {
       // get a "sublist" beginning at cachedFilelog.length - pathrev.Rev
       var list : List<FileLog.Entry> = {}
-      for (n in Integer.range(cachedFilelog.Count - pathrev.Rev, cachedFilelog.Count - 1)) {
+      for (n in new IntegerInterval(cachedFilelog.Count - pathrev.Rev, cachedFilelog.Count - 1)) {
         list.add(cachedFilelog[n])
       }
       return list
@@ -121,7 +122,7 @@ class P4Blame implements IP4Blame
     var _logEntry : FileLog.Entry
     var _pathrev : PathRev as PathRev
 
-    var _records = LazyVar<HashSet<Record>>.make(\ -> {
+    var _records = LocklessLazyVar<HashSet<Record>>.make(\ -> {
       var records = new HashSet<Record>()
       for (rec in _recordList) {
         if (rec != null) {
@@ -135,10 +136,10 @@ class P4Blame implements IP4Blame
       return _records.get()
     }
 
-    construct(cRecordList : RecordList, cPathrev : PathRev) {
+    construct(cRecordList : RecordList, cPathRev : PathRev) {
       _recordList = cRecordList
       _pathrev = cPathRev
-      _logEntry = filelog(pathrev)[0]
+      _logEntry = filelog(cPathRev)[0]
     }
 
     function shouldContinue() : boolean {
@@ -159,11 +160,11 @@ class P4Blame implements IP4Blame
 
     function getSourceNodes() : List<HistoryGraphNode> {
       var ret = new ArrayList<HistoryGraphNode>()
-      if (pathrev.Rev > 1) {
-        ret.add(new HistoryGraphNode(_recordList.dup(), P4Factory.createPath(pathrev.Path, pathrev.Rev - 1)))
+      if (_pathrev.Rev > 1) {
+        ret.add(new HistoryGraphNode(_recordList.dup(), P4Factory.createPath(_pathrev.Path, _pathrev.Rev - 1)))
       }
       for (sourceDetail in _logEntry.Sources) {
-        ret.add(new HistoryGraphNode(_recordList.dup(), sourceDetail.PathRev.EndPathRev))
+        ret.add(new HistoryGraphNode(_recordList.dup(), sourceDetail.PathRev.EndPathRevIfPathRange))
       }
       return ret
     }
@@ -172,7 +173,7 @@ class P4Blame implements IP4Blame
       for (diffEntry in diff2(targetNode.PathRev, _pathrev)) {
         if (diffEntry.Op == "c" or diffEntry.Op == "d") {
           for (n in diffEntry.LeftRange) {
-            var indexToRemove = (diffEntry.Op == "d") ? diffEntry.RightRange.start : diffEntry.RightRange.start - 1
+            var indexToRemove = (diffEntry.Op == "d") ? diffEntry.RightRange.first() : diffEntry.RightRange.first() - 1
             _recordList.remove(indexToRemove)
           }
         }
@@ -195,7 +196,7 @@ class P4Blame implements IP4Blame
     var _date : String as Date
     var _user : String as User
     var _path : String as Path
-    var _lazyDescription = LazyVar<String>.make(\ -> {
+    var _lazyDescription = LocklessLazyVar<String>.make(\ -> {
       var desc : LinkedList<String>
       _p4.exec("change -o ${Change}", \ line -> {
         if (desc != null) {
