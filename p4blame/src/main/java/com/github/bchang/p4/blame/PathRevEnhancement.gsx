@@ -15,12 +15,8 @@ enhancement PathRevEnhancement : PathRev {
       ret.add(P4Factory.createPath(this.Path, this.Rev - 1))
     }
     for (sourceDetail in logEntry.Sources) {
-      ret.add(sourceDetail.PathRev.EndPathRevIfPathRange)
+      ret.add(sourceDetail.PathRev.EndPathRev)
     }
     return ret
-  }
-
-  property get EndPathRevIfPathRange() : PathRev {
-    return this typeis PathRange ? this.EndPathRev : this
   }
 }

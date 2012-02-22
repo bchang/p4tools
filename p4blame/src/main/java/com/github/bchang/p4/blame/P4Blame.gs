@@ -164,7 +164,7 @@ class P4Blame implements IP4Blame
         ret.add(new HistoryGraphNode(_recordList.dup(), P4Factory.createPath(_pathrev.Path, _pathrev.Rev - 1)))
       }
       for (sourceDetail in _logEntry.Sources) {
-        ret.add(new HistoryGraphNode(_recordList.dup(), sourceDetail.PathRev.EndPathRevIfPathRange))
+        ret.add(new HistoryGraphNode(_recordList.dup(), sourceDetail.PathRev.EndPathRev))
       }
       return ret
     }
