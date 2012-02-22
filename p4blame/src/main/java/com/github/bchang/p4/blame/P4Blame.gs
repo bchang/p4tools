@@ -173,7 +173,7 @@ class P4Blame implements IP4Blame
       for (diffEntry in diff2(targetNode.PathRev, _pathrev)) {
         if (diffEntry.Op == "c" or diffEntry.Op == "d") {
           for (n in diffEntry.LeftRange) {
-            var indexToRemove = (diffEntry.Op == "d") ? diffEntry.RightRange.first() : diffEntry.RightRange.first() - 1
+            var indexToRemove : int = (diffEntry.Op == "d") ? diffEntry.RightRange.first() : diffEntry.RightRange.first() - 1
             _recordList.remove(indexToRemove)
           }
         }
