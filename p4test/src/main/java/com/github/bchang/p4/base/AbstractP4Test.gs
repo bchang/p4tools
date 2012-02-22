@@ -12,6 +12,9 @@ uses java.lang.StringBuilder
 
 abstract class AbstractP4Test extends TestClass {
 
+  static final var SERVER_HOST = "localhost"
+  static final var SERVER_PORT = 9999
+
   static var _tmpDir = new File(System.getProperty("java.io.tmpdir"), "p4test")
   static var _clientRoot = new File(_tmpDir, "client")
   static var _p4d : File
@@ -22,12 +25,10 @@ abstract class AbstractP4Test extends TestClass {
   }
 
   function createP4() {
-    var serverHost = "localhost"
-    var serverPort = 9999 // nonprivileged port so it doesn't require root
     var serverRoot = new File(_tmpDir, "server")
     var client = "P4TestClient"
 
-    _p4 = P4Factory.createP4(serverHost, serverPort, client, null, true, true)
+    _p4 = P4Factory.createP4(SERVER_HOST, SERVER_PORT, client, null, true, true)
 
     var p4dPath = java.lang.System.getenv()["P4D"]
     if (p4dPath == null) {
@@ -44,7 +45,7 @@ abstract class AbstractP4Test extends TestClass {
     serverRoot.mkdirs()
     var process = Shell.buildProcess("${_p4d} -d")
     process.Environment["P4ROOT"] = serverRoot.Path
-    process.Environment["P4PORT"] = serverPort as String
+    process.Environment["P4PORT"] = SERVER_PORT as String
     process.start()
 
     // Create one client
@@ -68,15 +69,12 @@ abstract class AbstractP4Test extends TestClass {
   }
 
   private function tryToKillP4D(failIfNoKill : boolean) {
+    if (_p4.Host != SERVER_HOST || _p4.Port != SERVER_PORT) {
+      throw "p4 client not pointing to ${SERVER_HOST}:${SERVER_PORT}!! (${_p4.Host}:${_p4.Port})"
+    }
     // Kill any previously running server
     try {
       _p4.run("admin stop")
-/*
-      Shell.exec("killall ${_p4d.Name}")
-
-      print("Waiting 1 second for daemon to die...")
-*/
-      Thread.sleep(1000)
     }
     catch (e : CommandFailedException) {
       if (failIfNoKill) {

@@ -14,7 +14,7 @@ uses java.util.Set
 class P4ClientImpl implements P4Client {
 
   var _host : String as readonly Host
-  var _port : int
+  var _port : int as readonly Port
   var _client : String as readonly Client
   var _user : String as User
   var _verbose : boolean as Verbose
