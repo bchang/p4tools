@@ -10,6 +10,7 @@
   <name>p4tools</name>
 
   <modules>
+    <module>p4api</module>
     <module>p4base</module>
     <module>p4blame</module>
     <module>p4test</module>

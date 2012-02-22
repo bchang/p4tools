@@ -2,6 +2,8 @@ package com.github.bchang.p4.blame
 
 uses com.github.bchang.p4.base.AbstractP4Test
 uses java.lang.*
+uses org.fest.assertions.Assertions
+uses org.fest.assertions.ListAssert
 
 class P4BlameTest extends AbstractP4Test {
 
@@ -14,10 +16,11 @@ class P4BlameTest extends AbstractP4Test {
         "3\n")
 
     var recordList = new P4Blame(P4).forPath(file.Path)
-    assertEquals(3, recordList.Count)
-    assertRecord(change, "testuser", "//depot/${file.Name}#1", "1", recordList.get(0))
-    assertRecord(change, "testuser", "//depot/${file.Name}#1", "2", recordList.get(1))
-    assertRecord(change, "testuser", "//depot/${file.Name}#1", "3", recordList.get(2))
+    assertThat(recordList).containsExactly({
+        "${change}:testuser://depot/${file.Name}#1:1",
+        "${change}:testuser://depot/${file.Name}#1:2",
+        "${change}:testuser://depot/${file.Name}#1:3"
+    })
   }
 
   function testBlameForFileWithTwoRevs() {
@@ -40,12 +43,13 @@ class P4BlameTest extends AbstractP4Test {
         "5\n")
 
     var recordList = new P4Blame(P4).forPath(file.Path)
-    assertEquals(5, recordList.Count)
-    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "2", recordList.get(0))
-    assertRecord(change2, "testuser2", "//depot/${file.Name}#2", "3a", recordList.get(1))
-    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "4", recordList.get(2))
-    assertRecord(change2, "testuser2", "//depot/${file.Name}#2", "a", recordList.get(3))
-    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "5", recordList.get(4))
+    assertThat(recordList).containsExactly({
+        "${change1}:testuser://depot/${file.Name}#1:2",
+        "${change2}:testuser2://depot/${file.Name}#2:3a",
+        "${change1}:testuser://depot/${file.Name}#1:4",
+        "${change2}:testuser2://depot/${file.Name}#2:a",
+        "${change1}:testuser://depot/${file.Name}#1:5"
+    })
   }
 
   function testBlameForFileHistoryAcrossIntegs() {
@@ -62,14 +66,15 @@ class P4BlameTest extends AbstractP4Test {
     var fileB = newUniqueFile()
     /* var change2 = */ integFileAndSubmit(fileA, fileB)
     var recordList = new P4Blame(P4).forPath(fileB.Path)
-    assertEquals(7, recordList.Count)
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "1", recordList.get(0))
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "2", recordList.get(1))
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "3", recordList.get(2))
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "4", recordList.get(3))
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "5", recordList.get(4))
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "6", recordList.get(5))
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "7", recordList.get(6))
+    assertThat(recordList).containsExactly({
+        "${change1}:testuser://depot/${fileA.Name}#1:1",
+        "${change1}:testuser://depot/${fileA.Name}#1:2",
+        "${change1}:testuser://depot/${fileA.Name}#1:3",
+        "${change1}:testuser://depot/${fileA.Name}#1:4",
+        "${change1}:testuser://depot/${fileA.Name}#1:5",
+        "${change1}:testuser://depot/${fileA.Name}#1:6",
+        "${change1}:testuser://depot/${fileA.Name}#1:7"
+    })
 
     var change3 = editFileAndSubmit(fileB,
         "1a\n" +
@@ -81,15 +86,16 @@ class P4BlameTest extends AbstractP4Test {
         "6\n" +
         "7\n")
     recordList = new P4Blame(P4).forPath(fileB.Path)
-    assertEquals(8, recordList.Count)
-    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "1a", recordList.get(0))
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "2", recordList.get(1))
-    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "3a", recordList.get(2))
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "4", recordList.get(3))
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "5", recordList.get(4))
-    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "a", recordList.get(5))
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "6", recordList.get(6))
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "7", recordList.get(7))
+    assertThat(recordList).containsExactly({
+        "${change3}:testuser://depot/${fileB.Name}#2:1a",
+        "${change1}:testuser://depot/${fileA.Name}#1:2",
+        "${change3}:testuser://depot/${fileB.Name}#2:3a",
+        "${change1}:testuser://depot/${fileA.Name}#1:4",
+        "${change1}:testuser://depot/${fileA.Name}#1:5",
+        "${change3}:testuser://depot/${fileB.Name}#2:a",
+        "${change1}:testuser://depot/${fileA.Name}#1:6",
+        "${change1}:testuser://depot/${fileA.Name}#1:7"
+    })
 
     var change4 = editFileAndSubmit(fileA,
         "1\n" +
@@ -101,15 +107,16 @@ class P4BlameTest extends AbstractP4Test {
         "7b\n")
     /* var change5 = */ integFileAndSubmit(fileA, fileB)
     recordList = new P4Blame(P4).forPath(fileB.Path)
-    assertEquals(8, recordList.Count)
-    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "1a", recordList.get(0))
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "2", recordList.get(1))
-    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "3a", recordList.get(2))
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "4", recordList.get(3))
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "5", recordList.get(4))
-    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "a", recordList.get(5))
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "6", recordList.get(6))
-    assertRecord(change4, "testuser", "//depot/${fileA.Name}#2", "7b", recordList.get(7))
+    assertThat(recordList).containsExactly({
+        "${change3}:testuser://depot/${fileB.Name}#2:1a",
+        "${change1}:testuser://depot/${fileA.Name}#1:2",
+        "${change3}:testuser://depot/${fileB.Name}#2:3a",
+        "${change1}:testuser://depot/${fileA.Name}#1:4",
+        "${change1}:testuser://depot/${fileA.Name}#1:5",
+        "${change3}:testuser://depot/${fileB.Name}#2:a",
+        "${change1}:testuser://depot/${fileA.Name}#1:6",
+        "${change4}:testuser://depot/${fileA.Name}#2:7b"
+    })
 
     /* var change6 = */ integFileAndSubmit(fileB, fileA)
     var change7 = editFileAndSubmit(fileA,
@@ -142,15 +149,16 @@ class P4BlameTest extends AbstractP4Test {
         "6\n" +
         "7b\n")
     recordList = new P4Blame(P4).forPath(fileB.Path)
-    assertEquals(8, recordList.Count)
-    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "1a", recordList.get(0))
-    assertRecord(change8, "testuser", "//depot/${fileA.Name}#5", "2b", recordList.get(1))
-    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "3a", recordList.get(2))
-    assertRecord(change7, "testuser", "//depot/${fileA.Name}#4", "4b", recordList.get(3))
-    assertRecord(change9, "testuser", "//depot/${fileB.Name}#4", "5a", recordList.get(4))
-    assertRecord(change3, "testuser", "//depot/${fileB.Name}#2", "a", recordList.get(5))
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "6", recordList.get(6))
-    assertRecord(change4, "testuser", "//depot/${fileA.Name}#2", "7b", recordList.get(7))
+    assertThat(recordList).containsExactly({
+        "${change3}:testuser://depot/${fileB.Name}#2:1a",
+        "${change8}:testuser://depot/${fileA.Name}#5:2b",
+        "${change3}:testuser://depot/${fileB.Name}#2:3a",
+        "${change7}:testuser://depot/${fileA.Name}#4:4b",
+        "${change9}:testuser://depot/${fileB.Name}#4:5a",
+        "${change3}:testuser://depot/${fileB.Name}#2:a",
+        "${change1}:testuser://depot/${fileA.Name}#1:6",
+        "${change4}:testuser://depot/${fileA.Name}#2:7b"
+    })
   }
 
   public function testBlameForFileWhichIsRenamedAndThenRenamedBack() {
@@ -166,11 +174,12 @@ class P4BlameTest extends AbstractP4Test {
     var change3 = submit({fileA, fileB}, "test moved file")
 
     var recordList = new P4Blame(P4).forPath(fileA.Path)
-    assertEquals(4, recordList.Count)
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "A", recordList.get(0))
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "B", recordList.get(1))
-    assertRecord(change1, "testuser", "//depot/${fileA.Name}#1", "C", recordList.get(2))
-    assertRecord(change3, "testuser", "//depot/${fileA.Name}#3", "D", recordList.get(3))
+    assertThat(recordList).containsExactly({
+        "${change1}:testuser://depot/${fileA.Name}#1:A",
+        "${change1}:testuser://depot/${fileA.Name}#1:B",
+        "${change1}:testuser://depot/${fileA.Name}#1:C",
+        "${change3}:testuser://depot/${fileA.Name}#3:D"
+    })
   }
 
   public function testExceptionThrownWhenForFileNotInDepot() {
@@ -193,23 +202,23 @@ class P4BlameTest extends AbstractP4Test {
     var change2 = editFileAndSubmit(file, "A\nB\nC\nD\n")
 
     var recordList = new P4Blame(P4).forPath(file.Path + "#1")
-    assertEquals(3, recordList.Count)
-    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "A", recordList.get(0))
-    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "B", recordList.get(1))
-    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "C", recordList.get(2))
+    assertThat(recordList).containsExactly({
+        "${change1}:testuser://depot/${file.Name}#1:A",
+        "${change1}:testuser://depot/${file.Name}#1:B",
+        "${change1}:testuser://depot/${file.Name}#1:C"
+    })
 
     recordList = new P4Blame(P4).forPath(file.Path + "#2")
-    assertEquals(4, recordList.Count)
-    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "A", recordList.get(0))
-    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "B", recordList.get(1))
-    assertRecord(change1, "testuser", "//depot/${file.Name}#1", "C", recordList.get(2))
-    assertRecord(change2, "testuser", "//depot/${file.Name}#2", "D", recordList.get(3))
+    assertThat(recordList).containsExactly({
+        "${change1}:testuser://depot/${file.Name}#1:A",
+        "${change1}:testuser://depot/${file.Name}#1:B",
+        "${change1}:testuser://depot/${file.Name}#1:C",
+        "${change2}:testuser://depot/${file.Name}#2:D"
+    })
   }
 
-  private function assertRecord(change : int, user : String, path : String, line : String, rec : Record) {
-    assertEquals(change, rec.LogEntry.Change)
-    assertEquals(user, rec.LogEntry.User)
-    assertEquals(path, rec.LogEntry.PathRev.toString())
-    assertEquals(line, rec.Line)
+  function assertThat(recordList : RecordList) : ListAssert {
+    var stringEntries = recordList.map( \ rec -> rec.LogEntry.Change + ":" + rec.LogEntry.User + ":" + rec.LogEntry.PathRev + ":" + rec.Line )
+    return Assertions.assertThat(stringEntries)
   }
 }

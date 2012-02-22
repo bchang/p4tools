@@ -53,20 +53,12 @@ class P4ClientImpl implements P4Client {
     }
   }
 
-  override function diff2(left : String, right : String) : List<Diff2.Entry> {
-    return diff2(P4Factory.createPath(left), P4Factory.createPath(right))
-  }
-
   override function diff2(left : Path, right : Path) : List<Diff2.Entry> {
     var diff2 = new Diff2Impl(this)
     if (_stats != null) {
       _stats.recordDiff2(left.toString() + " " + right.toString())
     }
-    return diff2.on(left, right)
-  }
-
-  override function filelog(path : String) : List<FileLog.Entry> {
-    return filelog(P4Factory.createPath(path))
+    return diff2.run(left, right)
   }
 
   override function filelog(path : Path) : List<FileLog.Entry> {
@@ -74,34 +66,22 @@ class P4ClientImpl implements P4Client {
     if (_stats != null) {
       _stats.recordFilelog(path.Path)
     }
-    return filelog.on(path)
-  }
-
-  override function filelog(path : String, maxRevs : int) : List<FileLog.Entry> {
-    return filelog(P4Factory.createPath(path), maxRevs)
+    return filelog.run(path)
   }
 
   override function filelog(path : Path, maxRevs : int) : List<FileLog.Entry> {
     var filelog = new FileLogImpl(this)
-    return filelog.on(path, maxRevs)
-  }
-
-  override function fstat(path : String) : Map<String, String> {
-    return fstat(P4Factory.createPath(path))
+    return filelog.run(path, maxRevs)
   }
 
   override function fstat(path : Path) : Map<String, String> {
     var fstat = new FstatImpl(this)
-    return fstat.on(path)
-  }
-
-  override function print(path : String) : List<String> {
-    return this.print(P4Factory.createPath(path))
+    return fstat.run(path)
   }
 
   override function print(path : Path) : List<String> {
     var printq = new PrintImpl(this)
-    return printq.on(path)
+    return printq.run(path)
   }
 
   protected function run(op : AbstractOperation) {
@@ -119,10 +99,10 @@ class P4ClientImpl implements P4Client {
     return out.toString()
   }
 
-  override function runUntil(op : String, accept(line : String) : boolean) : String {
+  override function runUntil(op : String, until : gw.util.Predicate<String>) : String {
     var foundLine : String
     p4process(op)
-         .withStdOutHandler(\ line -> { if (foundLine == null && accept(line)) foundLine = line })
+         .withStdOutHandler(\ line -> { if (foundLine == null && until.evaluate(line)) foundLine = line })
          .exec()
     return foundLine
   }
@@ -131,8 +111,8 @@ class P4ClientImpl implements P4Client {
     p4process(op).exec()
   }
 
-  override function exec(op : String, handleStdOut(line : String)) {
-    p4process(op).withStdOutHandler(\ line -> handleStdOut(line)).exec()
+  override function exec(op : String, handler : ProcessStarter.OutputHandler) {
+    p4process(op).withStdOutHandler(handler).exec()
   }
 
   override function run(op : String, handler : ProcessStarter.ProcessHandler) {
