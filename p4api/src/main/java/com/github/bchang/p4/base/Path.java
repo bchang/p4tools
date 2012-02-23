@@ -26,7 +26,7 @@ public class Path {
 
   @Override
   public int hashCode() {
-    return _path.hashCode();
+    return toString().hashCode();
   }
 
   @Override
