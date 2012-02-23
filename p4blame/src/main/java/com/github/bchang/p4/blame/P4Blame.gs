@@ -5,7 +5,7 @@ uses java.lang.*
 uses java.util.*
 uses gw.util.AutoMap
 uses gw.util.Pair
-uses gw.util.concurrent.LazyVar
+uses gw.lang.reflect.interval.IntegerInterval
 
 // need caching
 // better error handling for entry point, handle revs
@@ -36,7 +36,7 @@ class P4Blame implements IP4Blame
 
   override function setup(pathStr : String) : String[] {
     var fstatDepotFile : String
-    fstatDepotFile = _p4.fstat(pathStr)["depotFile"]
+    fstatDepotFile = _p4.fstat(pathStr.asPath())["depotFile"]
     if (fstatDepotFile == null) {
       throw new IllegalArgumentException("No such file in depot: ${pathStr}")
     }
@@ -80,7 +80,7 @@ class P4Blame implements IP4Blame
     if (pathrev typeis PathRev and pathrev.Rev > 0) {
       // get a "sublist" beginning at cachedFilelog.length - pathrev.Rev
       var list : List<FileLog.Entry> = {}
-      for (n in Integer.range(cachedFilelog.Count - pathrev.Rev, cachedFilelog.Count - 1)) {
+      for (n in new IntegerInterval(cachedFilelog.Count - pathrev.Rev, cachedFilelog.Count - 1)) {
         list.add(cachedFilelog[n])
       }
       return list
@@ -143,11 +143,8 @@ class P4Blame implements IP4Blame
     }
   }
 
-  function backtrackIntoIntegSource(forkedList : RecordList, sourceDetail : FileLog.Entry.Detail, logEntry : FileLog.Entry, recordsChangedWithinPath : HashSet<Record>, recursionDepth : int) {
-    var sourcePathRev = sourceDetail.PathRev
-    if (sourcePathRev typeis PathRange) {
-      sourcePathRev = sourcePathRev.EndPathRev
-    }
+  function backtrackIntoIntegSource(forkedList : RecordList, sourceDetail : FileLog.EntryDetail, logEntry : FileLog.Entry, recordsChangedWithinPath : HashSet<Record>, recursionDepth : int) {
+    var sourcePathRev = sourceDetail.PathRev.EndPathRev
 
     // mask unflagged lines, to be ignored when exploring the source branch
     for (rec in forkedList index i) {
@@ -171,7 +168,7 @@ class P4Blame implements IP4Blame
     var removedRecs = new ArrayList<Record>()
     if (diffEntry.Op == "c" or diffEntry.Op == "d") {
       for (n in diffEntry.LeftRange) {
-        var indexToRemove = (diffEntry.Op == "d") ? diffEntry.RightRange.start : diffEntry.RightRange.start - 1
+        var indexToRemove : int = (diffEntry.Op == "d") ? diffEntry.RightRange.first() : diffEntry.RightRange.first() - 1
         var removedRec = records.remove(indexToRemove)
         if (removedRec != null) removedRecs.add(removedRec)
       }
@@ -199,7 +196,7 @@ class P4Blame implements IP4Blame
     var _date : String as Date
     var _user : String as User
     var _path : String as Path
-    var _lazyDescription = LazyVar<String>.make(\ -> {
+    var _lazyDescription = LazyVar.make(\ -> {
       var desc : LinkedList<String>
       _p4.exec("change -o ${Change}", \ line -> {
         if (desc != null) {

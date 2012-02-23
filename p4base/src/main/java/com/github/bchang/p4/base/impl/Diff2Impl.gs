@@ -1,5 +1,6 @@
 package com.github.bchang.p4.base.impl
-uses gw.util.IntegerRange
+
+uses gw.lang.reflect.interval.IntegerInterval
 uses com.github.bchang.p4.base.Diff2
 uses com.github.bchang.p4.base.Path
 uses com.github.bchang.p4.base.PathRange
@@ -20,7 +21,7 @@ class Diff2Impl extends AbstractOperation implements Diff2 {
     super(client)
   }
 
-  override function on( left : Path, right : Path ) : List<EntryImpl> {
+  override function run( left : Path, right : Path ) : List<EntryImpl> {
     if (left typeis PathRange or right typeis PathRange) {
       throw "cannot do diff operation on a path range"
     }
@@ -53,33 +54,33 @@ class Diff2Impl extends AbstractOperation implements Diff2 {
     }
   }
 
-  private static function parseRange(range : String) : IntegerRange {
+  private static function parseRange(range : String) : IntegerInterval {
     if (range.contains(",")) {
       var split = range.split(",")
-      return new IntegerRange((split[0].toInt()), (split[1].toInt()))
+      return new IntegerInterval((split[0].toInt()), (split[1].toInt()))
     }
     else {
-      return new IntegerRange(range.toInt(), range.toInt())
+      return new IntegerInterval(range.toInt(), range.toInt())
     }
   }
 
   static class EntryImpl implements Diff2.Entry {
     var _op : String as readonly Op
-    var _leftRange : IntegerRange
-    var _rightRange : IntegerRange
+    var _leftRange : IntegerInterval
+    var _rightRange : IntegerInterval
     var _leftLines : List<String> as LeftLines = new ArrayList<String>()
     var _rightLines : List<String> as RightLines = new ArrayList<String>()
-    override property get LeftRange() : IntegerRange { return _leftRange.copy() }
-    override property get RightRange() : IntegerRange { return _rightRange.copy() }
+    override property get LeftRange() : IntegerInterval { return _leftRange.copy() }
+    override property get RightRange() : IntegerInterval { return _rightRange.copy() }
  
-    protected construct(s : String, lr : IntegerRange, rr : IntegerRange) {
+    protected construct(s : String, lr : IntegerInterval, rr : IntegerInterval) {
       _op = s
       _leftRange = lr
       _rightRange = rr
     }
     
     override function toString() : String {
-      return "${LeftRange.start},${LeftRange.end} ${Op} ${RightRange.start},${RightRange.end}"
+      return "${LeftRange.first()},${LeftRange.last()} ${Op} ${RightRange.first()},${RightRange.last()}"
     }
   }
 }

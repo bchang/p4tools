@@ -20,11 +20,11 @@ class FileLogImpl extends AbstractOperation implements FileLog {
     super(client)
   }
 
-  override function on(p : Path) : List<EntryImpl> {
-    return on(p, 0)
+  override function run(p : Path) : List<EntryImpl> {
+    return run(p, 0)
   }
 
-  override function on(p : Path, maxRevs : int) : List<EntryImpl> {
+  override function run(p : Path, maxRevs : int) : List<EntryImpl> {
     if (p typeis PathRange) {
       p = P4Factory.createPath(p.Path, p.EndRev)
     }
@@ -55,11 +55,11 @@ class FileLogImpl extends AbstractOperation implements FileLog {
     else {
       var detailMatcher = DETAIL_PAT.matcher(line)
       if (detailMatcher.matches()) {
-        var detail = new EntryImpl.DetailImpl() {
-          :SubOp = detailMatcher.group(1),
-          :Direction = detailMatcher.group(3),
-          :PathRev = P4Factory.createPath(detailMatcher.group(4)) as PathRev
-        }
+        var detail = new DetailImpl() {
+        :SubOp = detailMatcher.group(1),
+        :Direction = detailMatcher.group(3),
+        :PathRev = P4Factory.createPath(detailMatcher.group(4)) as PathRev
+      }
 
         if (detail.Direction == "from") {
           _list.last().Sources.add(detail)
@@ -86,8 +86,8 @@ class FileLogImpl extends AbstractOperation implements FileLog {
     var _op : String as Op
     var _date : String as Date
     var _user : String as User
-    var _sources : List<FileLog.Entry.Detail> as Sources
-    var _targets : List<FileLog.Entry.Detail> as Targets
+    var _sources : List<? extends FileLog.EntryDetail> as Sources
+    var _targets : List<? extends FileLog.EntryDetail> as Targets
 
     construct() {
       Sources = {}
@@ -97,16 +97,15 @@ class FileLogImpl extends AbstractOperation implements FileLog {
     override function toString() : String {
       return "#${PathRev.Rev} change ${Change} ${Op} on ${Date} by ${User}"
     }
-
-    static class DetailImpl implements FileLog.Entry.Detail {
-      var _subOp : String as SubOp
-      var _direction : String as Direction
-      var _pathRev : PathRev as PathRev
-      
-      override function toString() : String {
-        return "${SubOp} ${Direction} ${PathRev}"
-      }
-    }
   }
 
+  static class DetailImpl implements FileLog.EntryDetail {
+    var _subOp : String as SubOp
+    var _direction : String as Direction
+    var _pathRev : PathRev as PathRev
+
+    override function toString() : String {
+      return "${SubOp} ${Direction} ${PathRev}"
+    }
+  }
 }

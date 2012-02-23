@@ -1,5 +1,6 @@
 package com.github.bchang.p4.base
-uses gw.util.IntegerRange
+
+uses gw.lang.reflect.interval.IntegerInterval
 
 class Diff2Test extends AbstractP4Test {
 
@@ -8,10 +9,10 @@ class Diff2Test extends AbstractP4Test {
     var fileB = newUniqueFile()
     createFileAndSubmit(fileA, "A\nB\n")
     createFileAndSubmit(fileB, "X\nA\nB\n")
-    var diff = P4.diff2(fileA.Path, fileB.Path)
+    var diff = P4.diff2(fileA.asPath(), fileB.asPath())
     assertEquals(1, diff.Count)
     assertDiffEntry("a", 0, 0, 1, 1, {}, {"X"}, diff[0])
-    diff = P4.diff2(fileB.Path, fileA.Path)
+    diff = P4.diff2(fileB.asPath(), fileA.asPath())
     assertEquals(1, diff.Count)
     assertDiffEntry("d", 1, 1, 0, 0, {"X"}, {}, diff[0])
   }
@@ -21,10 +22,10 @@ class Diff2Test extends AbstractP4Test {
     var fileB = newUniqueFile()
     createFileAndSubmit(fileA, "A\nB\n")
     createFileAndSubmit(fileB, "A\nX\nB\n")
-    var diff = P4.diff2(fileA.Path, fileB.Path)
+    var diff = P4.diff2(fileA.asPath(), fileB.asPath())
     assertEquals(1, diff.Count)
     assertDiffEntry("a", 1, 1, 2, 2, {}, {"X"}, diff[0])
-    diff = P4.diff2(fileB.Path, fileA.Path)
+    diff = P4.diff2(fileB.asPath(), fileA.asPath())
     assertEquals(1, diff.Count)
     assertDiffEntry("d", 2, 2, 1, 1, {"X"}, {}, diff[0])
   }
@@ -34,10 +35,10 @@ class Diff2Test extends AbstractP4Test {
     var fileB = newUniqueFile()
     createFileAndSubmit(fileA, "A\nB\n")
     createFileAndSubmit(fileB, "A\nB\nX\n")
-    var diff = P4.diff2(fileA.Path, fileB.Path)
+    var diff = P4.diff2(fileA.asPath(), fileB.asPath())
     assertEquals(1, diff.Count)
     assertDiffEntry("a", 2, 2, 3, 3, {}, {"X"}, diff[0])
-    diff = P4.diff2(fileB.Path, fileA.Path)
+    diff = P4.diff2(fileB.asPath(), fileA.asPath())
     assertEquals(1, diff.Count)
     assertDiffEntry("d", 3, 3, 2, 2, {"X"}, {}, diff[0])
   }
@@ -47,10 +48,10 @@ class Diff2Test extends AbstractP4Test {
     var fileB = newUniqueFile()
     createFileAndSubmit(fileA, "A\nB\n")
     createFileAndSubmit(fileB, "X\nY\nB\n")
-    var diff = P4.diff2(fileA.Path, fileB.Path)
+    var diff = P4.diff2(fileA.asPath(), fileB.asPath())
     assertEquals(1, diff.Count)
     assertDiffEntry("c", 1, 1, 1, 2, {"A"}, {"X", "Y"}, diff[0])
-    diff = P4.diff2(fileB.Path, fileA.Path)
+    diff = P4.diff2(fileB.asPath(), fileA.asPath())
     assertEquals(1, diff.Count)
     assertDiffEntry("c", 1, 2, 1, 1, {"X", "Y"}, {"A"}, diff[0])
   }
@@ -60,12 +61,12 @@ class Diff2Test extends AbstractP4Test {
     var fileB = newUniqueFile()
     createFileAndSubmit(fileA, "A\nB\nC\nD\n")
     createFileAndSubmit(fileB, "X\nB\nY\nC\n")
-    var diff = P4.diff2(fileA.Path, fileB.Path)
+    var diff = P4.diff2(fileA.asPath(), fileB.asPath())
     assertEquals(3, diff.Count)
     assertDiffEntry("c", 1, 1, 1, 1, {"A"}, {"X"}, diff[0])
     assertDiffEntry("a", 2, 2, 3, 3, {}, {"Y"}, diff[1])
     assertDiffEntry("d", 4, 4, 4, 4, {"D"}, {}, diff[2])
-    diff = P4.diff2(fileB.Path, fileA.Path)
+    diff = P4.diff2(fileB.asPath(), fileA.asPath())
     assertEquals(3, diff.Count)
     assertDiffEntry("c", 1, 1, 1, 1, {"X"}, {"A"}, diff[0])
     assertDiffEntry("d", 3, 3, 2, 2, {"Y"}, {}, diff[1])
@@ -88,9 +89,9 @@ class Diff2Test extends AbstractP4Test {
     assertEquals(rightLines, diffEntry.RightLines)
   }
 
-  private function assertIntegerRange(expectedStart : int, expectedEnd : int, range : IntegerRange) {
-    assertEquals(expectedStart, range.start)
-    assertEquals(expectedEnd, range.end)
-    assertEquals(1, range.step)
+  private function assertIntegerRange(expectedStart : int, expectedEnd : int, range : IntegerInterval) {
+    assertEquals(expectedStart, range.first())
+    assertEquals(expectedEnd, range.last())
+    assertEquals(1, range.Step)
   }
 }
