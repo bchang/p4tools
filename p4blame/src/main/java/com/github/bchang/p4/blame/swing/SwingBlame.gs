@@ -31,7 +31,7 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
 
   var _status : JLabel
 
-  var _numDiscovered : int
+  var _discovered = new java.util.HashSet<Integer>()
 
   // TODO - figure these out
   var _me : SwingBlame
@@ -123,8 +123,8 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
       }
     });
     using(_lock) {
-      _numDiscovered++
-      if (_numDiscovered == _model.getRowCount()) {
+      _discovered.add(line.Id)
+      if (_discovered.size() == _model.getRowCount()) {
         EventQueue.invokeLater(new Runnable() {
           override function run() {
             blameFinished();
@@ -155,7 +155,7 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
 
     try {
       using(_lock) {
-        _numDiscovered = 0;
+        _discovered.clear()
       }
       _lines = _blame.setup(_pathField.getText())
       _changes = new IP4ChangeInfo[_lines.length]
@@ -175,6 +175,7 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
       });
       blameThread.start();
     } catch (ex : Exception) {
+      ex.printStackTrace()
       JOptionPane.showMessageDialog(this, ex.Message)
       blameFinished()
     }
