@@ -36,7 +36,11 @@ class Diff2Impl extends AbstractOperation implements Diff2 {
     return "diff2 \"${_left.toString()}\" \"${_right.toString()}\""
   }
 
-  override function handleLine( line : String ) {
+  override function getCacheAddress(): java.lang.String {
+    return "diff2/" + abbreviatePath(_left) + "/" + abbreviatePath(_right)
+  }
+
+  override function handleLine(line: String) {
     var matcher = CODE_PAT.matcher(line)
     if (matcher.matches()) {
       _list.add(new EntryImpl(matcher.group(3), parseRange(matcher.group(1)), parseRange(matcher.group(4))))

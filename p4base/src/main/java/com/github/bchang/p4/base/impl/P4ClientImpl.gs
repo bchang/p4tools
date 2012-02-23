@@ -84,13 +84,6 @@ class P4ClientImpl implements P4Client {
     return printq.run(path)
   }
 
-  protected function run(op : AbstractOperation) {
-    p4process(op.getCommand())
-         .withStdOutHandler(\ line -> op.handleLine(line))
-         .withStdErrHandler(\ line -> op.handleLine(line))
-         .exec()
-  }
-
   override function run(op : String) : String {
     var out = new StringBuilder()
     p4process(op)
@@ -119,7 +112,7 @@ class P4ClientImpl implements P4Client {
     p4process(op).processWithHandler(handler)
   }
 
-  private function p4process(op : String) : ProcessStarter {
+  protected function p4process(op : String) : ProcessStarter {
     var cmd = "p4 ${op}"
     if (_verbose) {
       print("> ${cmd}")

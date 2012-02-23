@@ -40,11 +40,16 @@ class FileLogImpl extends AbstractOperation implements FileLog {
     return "filelog ${maxRevsArg}\"${_path.toString()}\""
   }
 
-  override function handleLine(line : String) {
+  override function getCacheAddress(): java.lang.String {
+    return "filelog/" + abbreviatePath(_path)
+  }
+
+  override function handleLine(line: String) {
     var entryMatcher = ENTRY_PAT.matcher(line)
     if (entryMatcher.matches()) {
+      var rev = entryMatcher.group(1).toInt()
       var entry = new EntryImpl() {
-        :PathRev = P4Factory.createPath("${_path.Path}#${entryMatcher.group(1).toInt()}") as PathRev,
+        :PathRev = P4Factory.createPath("${_path.Path}#${rev}") as PathRev,
         :Change = entryMatcher.group(2).toInt(),
         :Op = entryMatcher.group(3),
         :Date = entryMatcher.group(4),
@@ -56,10 +61,10 @@ class FileLogImpl extends AbstractOperation implements FileLog {
       var detailMatcher = DETAIL_PAT.matcher(line)
       if (detailMatcher.matches()) {
         var detail = new DetailImpl() {
-        :SubOp = detailMatcher.group(1),
-        :Direction = detailMatcher.group(3),
-        :PathRev = P4Factory.createPath(detailMatcher.group(4)) as PathRev
-      }
+          :SubOp = detailMatcher.group(1),
+          :Direction = detailMatcher.group(3),
+          :PathRev = P4Factory.createPath(detailMatcher.group(4)) as PathRev
+        }
 
         if (detail.Direction == "from") {
           _list.last().Sources.add(detail)
