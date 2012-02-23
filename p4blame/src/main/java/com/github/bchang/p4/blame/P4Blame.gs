@@ -94,12 +94,16 @@ class P4Blame implements IP4Blame
 
   private function backtrackFromNode(recordList : RecordList, pathrev : PathRev) {
     var traversalQ = new LinkedList<HistoryGraphNode>()
-    traversalQ.add(new HistoryGraphNode(recordList, pathrev))
+    var headNode = new HistoryGraphNode(recordList, pathrev)
+    headNode.initRecordsForNode()
+    traversalQ.add(headNode)
     eachInGraphBreadthFirst(traversalQ)
   }
 
+  var _visitedPathRevs = new HashSet<PathRev>()
   private function eachInGraphBreadthFirst(traversalQ : LinkedList<HistoryGraphNode>) {
     while (traversalQ.Count > 0) {
+      print("queue size: " + traversalQ.Count)
       var node = traversalQ.removeFirst()
 
       var sourceNodes = node.getSourceNodes()
@@ -110,8 +114,9 @@ class P4Blame implements IP4Blame
       node.reportDiscoveries()
 
       for (sourceNode in sourceNodes) {
-        if (sourceNode.shouldContinue()) {
+        if (sourceNode.shouldContinue() && !_visitedPathRevs.contains(sourceNode.PathRev)) {
           traversalQ.add(sourceNode)
+          _visitedPathRevs.add(sourceNode.PathRev)
         }
       }
     }
@@ -121,20 +126,7 @@ class P4Blame implements IP4Blame
     var _recordList : RecordList
     var _logEntry : FileLog.Entry
     var _pathrev : PathRev as PathRev
-
-    var _records = LocklessLazyVar<HashSet<Record>>.make(\ -> {
-      var records = new HashSet<Record>()
-      for (rec in _recordList) {
-        if (rec != null) {
-          records.add(rec)
-        }
-      }
-      return records
-    })
-
-    property get RecordsForNode() : HashSet<Record> {
-      return _records.get()
-    }
+    var _recordsForNode : HashSet<Record> as RecordsForNode
 
     construct(cRecordList : RecordList, cPathRev : PathRev) {
       _recordList = cRecordList
@@ -170,7 +162,8 @@ class P4Blame implements IP4Blame
     }
 
     function backtrackFrom(targetNode : HistoryGraphNode) {
-      for (diffEntry in diff2(targetNode.PathRev, _pathrev)) {
+      var diff2 = diff2(targetNode.PathRev, _pathrev)
+      for (diffEntry in diff2) {
         if (diffEntry.Op == "c" or diffEntry.Op == "d") {
           for (n in diffEntry.LeftRange) {
             var indexToRemove : int = (diffEntry.Op == "d") ? diffEntry.RightRange.first() : diffEntry.RightRange.first() - 1
@@ -186,6 +179,16 @@ class P4Blame implements IP4Blame
       for (rec in _recordList) {
         if (rec != null) {
           targetNode.RecordsForNode.remove(rec)
+        }
+      }
+      initRecordsForNode()
+    }
+
+    function initRecordsForNode() {
+      _recordsForNode = new HashSet<Record>()
+      for (rec in _recordList) {
+        if (rec != null) {
+          _recordsForNode.add(rec)
         }
       }
     }
