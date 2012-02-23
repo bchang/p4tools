@@ -19,8 +19,9 @@ public class PathRange extends PathRev {
     return _endRev;
   }
 
+  @Override
   public PathRev getEndPathRev() {
-    return P4Factory.createPath(_path, _rev);
+    return P4Factory.createPath(_path, _endRev);
   }
 
   @Override

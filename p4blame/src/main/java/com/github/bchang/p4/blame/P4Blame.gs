@@ -144,10 +144,7 @@ class P4Blame implements IP4Blame
   }
 
   function backtrackIntoIntegSource(forkedList : RecordList, sourceDetail : FileLog.EntryDetail, logEntry : FileLog.Entry, recordsChangedWithinPath : HashSet<Record>, recursionDepth : int) {
-    var sourcePathRev = sourceDetail.PathRev
-    if (sourcePathRev typeis PathRange) {
-      sourcePathRev = sourcePathRev.EndPathRev
-    }
+    var sourcePathRev = sourceDetail.PathRev.EndPathRev
 
     // mask unflagged lines, to be ignored when exploring the source branch
     for (rec in forkedList index i) {
@@ -171,8 +168,8 @@ class P4Blame implements IP4Blame
     var removedRecs = new ArrayList<Record>()
     if (diffEntry.Op == "c" or diffEntry.Op == "d") {
       for (n in diffEntry.LeftRange) {
-        var indexToRemove = (diffEntry.Op == "d") ? diffEntry.RightRange.first() : diffEntry.RightRange.first() - 1
-        var removedRec = records.remove(indexToRemove as int)
+        var indexToRemove : int = (diffEntry.Op == "d") ? diffEntry.RightRange.first() : diffEntry.RightRange.first() - 1
+        var removedRec = records.remove(indexToRemove)
         if (removedRec != null) removedRecs.add(removedRec)
       }
     }

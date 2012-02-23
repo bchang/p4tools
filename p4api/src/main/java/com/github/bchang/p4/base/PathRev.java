@@ -19,6 +19,10 @@ public class PathRev extends Path {
     return _rev;
   }
 
+  public PathRev getEndPathRev() {
+    return this;
+  }
+
   @Override
   public String toString() {
     if (_rev == 0) {
