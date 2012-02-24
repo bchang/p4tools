@@ -11,4 +11,12 @@
 
   <artifactId>p4api</artifactId>
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.gosu-lang</groupId>
+        <artifactId>maven-gosu-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 </project>

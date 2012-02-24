@@ -1,5 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>org.gosu-lang</groupId>
+    <artifactId>gosu-project-parent</artifactId>
+    <version>4</version>
+
+  </parent>
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.github.bchang</groupId>
@@ -9,6 +15,13 @@
 
   <name>p4tools</name>
 
+  <repositories>
+    <repository>
+      <id>gosu-lang.org-gosu</id>
+      <url>http://gosu-lang.org/nexus/content/groups/releases</url>
+    </repository>
+  </repositories>
+
   <modules>
     <module>p4api</module>
     <module>p4base</module>
@@ -16,5 +29,19 @@
     <module>p4test</module>
   </modules>
 
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.gosu-lang</groupId>
+          <artifactId>maven-gosu-plugin</artifactId>
+          <version>1.2</version>
+          <configuration>
+            <gosuVersion>0.9-12</gosuVersion>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 </project>
 
