@@ -25,7 +25,11 @@ public interface P4Client {
   void clearStats();
   void printStats();
 
-  void edit(Path[] paths);
+  void add(Path... paths);
+  void edit(Path... paths);
+  void delete(Path... paths);
+  void revert(Path... paths);
+
   List<Diff2.Entry> diff2(Path left, Path right);
   List<FileLog.Entry> filelog(Path path);
   List<FileLog.Entry> filelog(Path path, int maxrevs);
