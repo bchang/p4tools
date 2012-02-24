@@ -4,6 +4,6 @@ uses java.io.File
 
 enhancement P4TestFileEnhancement : File {
   function asPath() : Path {
-    return P4Factory.createPath(this.Path)
+    return Path.create(this.Path)
   }
 }

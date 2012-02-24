@@ -40,12 +40,12 @@ class P4Blame implements IP4Blame
     if (fstatDepotFile == null) {
       throw new IllegalArgumentException("No such file in depot: ${pathStr}")
     }
-    _path = P4Factory.createPath(pathStr)
+    _path = Path.create(pathStr)
     if (_path typeis PathRev) {
-      _path = P4Factory.createPath(fstatDepotFile, _path.Rev)
+      _path = PathRev.create(fstatDepotFile, _path.Rev)
     }
     else {
-      _path = P4Factory.createPath(fstatDepotFile)
+      _path = Path.create(fstatDepotFile)
     }
     var lines = _p4.print(_path)
     var records = new ArrayList<Record>()

@@ -8,6 +8,11 @@ package com.github.bchang.p4.base;
  * To change this template use File | Settings | File Templates.
  */
 public class PathRev extends Path {
+  public static PathRev create(String p, int rev) {
+    return new PathRev(p, rev);
+  }
+
+
   protected final int _rev;
 
   protected PathRev(String p, int r) {

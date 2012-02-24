@@ -11,10 +11,10 @@ class PrintTest extends AbstractP4Test {
     assertEquals(expected, P4.print("${file.Path}#1".asPath()))
     assertEquals(expected, P4.print("//depot/${file.Name}".asPath()))
     assertEquals(expected, P4.print("//depot/${file.Name}#1".asPath()))
-    assertEquals(expected, P4.print(P4Factory.createPath(file.Path)))
-    assertEquals(expected, P4.print(P4Factory.createPath(file.Path, 1)))
-    assertEquals(expected, P4.print(P4Factory.createPath("//depot/${file.Name}")))
-    assertEquals(expected, P4.print(P4Factory.createPath("//depot/${file.Name}", 1)))
+    assertEquals(expected, P4.print(Path.create(file.Path)))
+    assertEquals(expected, P4.print(PathRev.create(file.Path, 1)))
+    assertEquals(expected, P4.print(Path.create("//depot/${file.Name}")))
+    assertEquals(expected, P4.print(PathRev.create("//depot/${file.Name}", 1)))
   }
 
   function testTwoRevs() {
@@ -27,16 +27,16 @@ class PrintTest extends AbstractP4Test {
 
     assertEquals(expected1, P4.print("${file.Path}#1".asPath()))
     assertEquals(expected1, P4.print("//depot/${file.Name}#1".asPath()))
-    assertEquals(expected1, P4.print(P4Factory.createPath(file.Path, 1)))
-    assertEquals(expected1, P4.print(P4Factory.createPath("//depot/${file.Name}", 1)))
+    assertEquals(expected1, P4.print(PathRev.create(file.Path, 1)))
+    assertEquals(expected1, P4.print(PathRev.create("//depot/${file.Name}", 1)))
 
     assertEquals(expected2, P4.print(file.asPath()))
     assertEquals(expected2, P4.print("${file.Path}#2".asPath()))
     assertEquals(expected2, P4.print("//depot/${file.Name}".asPath()))
     assertEquals(expected2, P4.print("//depot/${file.Name}#2".asPath()))
-    assertEquals(expected2, P4.print(P4Factory.createPath(file.Path)))
-    assertEquals(expected2, P4.print(P4Factory.createPath(file.Path, 2)))
-    assertEquals(expected2, P4.print(P4Factory.createPath("//depot/${file.Name}")))
-    assertEquals(expected2, P4.print(P4Factory.createPath("//depot/${file.Name}", 2)))
+    assertEquals(expected2, P4.print(Path.create(file.Path)))
+    assertEquals(expected2, P4.print(PathRev.create(file.Path, 2)))
+    assertEquals(expected2, P4.print(Path.create("//depot/${file.Name}")))
+    assertEquals(expected2, P4.print(PathRev.create("//depot/${file.Name}", 2)))
   }
 }

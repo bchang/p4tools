@@ -8,6 +8,10 @@ package com.github.bchang.p4.base;
  * To change this template use File | Settings | File Templates.
  */
 public class PathRange extends PathRev {
+  public static PathRange create(String p, int rev, int endRev) {
+    return new PathRange(p, rev, endRev);
+  }
+
   protected final int _endRev;
 
   protected PathRange(String p, int r, int endRev) {
@@ -21,7 +25,7 @@ public class PathRange extends PathRev {
 
   @Override
   public PathRev getEndPathRev() {
-    return P4Factory.createPath(_path, _endRev);
+    return PathRev.create(_path, _endRev);
   }
 
   @Override

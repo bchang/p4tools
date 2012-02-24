@@ -26,7 +26,7 @@ class FileLogImpl extends AbstractOperation implements FileLog {
 
   override function run(p : Path, maxRevs : int) : List<EntryImpl> {
     if (p typeis PathRange) {
-      p = P4Factory.createPath(p.Path, p.EndRev)
+      p = PathRev.create(p.Path, p.EndRev)
     }
     _path = p
     _maxRevs = maxRevs
@@ -44,7 +44,7 @@ class FileLogImpl extends AbstractOperation implements FileLog {
     var entryMatcher = ENTRY_PAT.matcher(line)
     if (entryMatcher.matches()) {
       var entry = new EntryImpl() {
-        :PathRev = P4Factory.createPath("${_path.Path}#${entryMatcher.group(1).toInt()}") as PathRev,
+        :PathRev = PathRev.create(_path.Path, entryMatcher.group(1).toInt()),
         :Change = entryMatcher.group(2).toInt(),
         :Op = entryMatcher.group(3),
         :Date = entryMatcher.group(4),
@@ -58,7 +58,7 @@ class FileLogImpl extends AbstractOperation implements FileLog {
         var detail = new DetailImpl() {
         :SubOp = detailMatcher.group(1),
         :Direction = detailMatcher.group(3),
-        :PathRev = P4Factory.createPath(detailMatcher.group(4)) as PathRev
+        :PathRev = Path.create(detailMatcher.group(4)) as PathRev
       }
 
         if (detail.Direction == "from") {

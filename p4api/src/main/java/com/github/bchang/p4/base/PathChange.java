@@ -8,6 +8,10 @@ package com.github.bchang.p4.base;
  * To change this template use File | Settings | File Templates.
  */
 public class PathChange extends Path {
+  public static PathChange create(String p, int change) {
+    return new PathChange(p, change);
+  }
+
   protected final int _change;
 
   protected PathChange(String p, int c) {

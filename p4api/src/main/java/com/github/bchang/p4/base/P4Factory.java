@@ -30,38 +30,4 @@ public class P4Factory {
     return (P4Client) ReflectUtil.construct("com.github.bchang.p4.base.impl.P4ClientImpl", host, port, client, user, verbose, recordStats);
   }
 
-  private static Pattern PATH_PAT = Pattern.compile("([^#]+)(#(\\d+)(,#(\\d+))?)?");
-
-  public static Path createPath(String s) {
-    Matcher pathMatcher = PATH_PAT.matcher(s);
-    if (pathMatcher.matches()) {
-      String path = pathMatcher.group(1);
-      String rev = pathMatcher.group(3);
-      String endRev = pathMatcher.group(5);
-      if (endRev != null) {
-        return createPath(path, Integer.parseInt(rev), Integer.parseInt(endRev));
-      }
-      else if (rev != null) {
-        return createPath(path, Integer.parseInt(rev));
-      }
-      else {
-        return new Path(path);
-      }
-    }
-    else {
-      throw new IllegalArgumentException("could not parse path from \"" + s + "\"");
-    }
-  }
-
-  public static PathRev createPath(String p, int rev) {
-    return new PathRev(p, rev);
-  }
-
-  public static PathRange createPath(String p, int rev, int endRev) {
-    return new PathRange(p, rev, endRev);
-  }
-
-  public static PathChange createPathChange(String p, int change) {
-    return new PathChange(p, change);
-  }
 }
