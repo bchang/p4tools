@@ -13,9 +13,9 @@ uses java.util.Set
 
 class P4ClientImpl implements P4Client {
 
-  var _host : String as readonly Host
-  var _port : int as readonly Port
-  var _client : String as readonly Client
+  var _host : String as Host
+  var _port : int as Port
+  var _client : String as Client
   var _user : String as User
   var _verbose : boolean as Verbose
   var _stats : Stats as Stats
@@ -51,6 +51,22 @@ class P4ClientImpl implements P4Client {
     else {
       throw "not recording stats"
     }
+  }
+
+  override function add(paths : Path[]) {
+    new FileOperation(this, "add", paths).run()
+  }
+
+  override function edit(paths : Path[]){
+    new FileOperation(this, "edit", paths).run()
+  }
+
+  override function delete(paths : Path[]){
+    new FileOperation(this, "delete", paths).run()
+  }
+
+  override function revert(paths : Path[]){
+    new FileOperation(this, "revert", paths).run()
   }
 
   override function diff2(left : Path, right : Path) : List<Diff2.Entry> {

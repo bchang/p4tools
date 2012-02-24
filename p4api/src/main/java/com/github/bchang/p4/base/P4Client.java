@@ -16,7 +16,8 @@ import java.util.Map;
 public interface P4Client {
   String getHost();
   int getPort();
-  void setHostAndPort(String hostAndPort);
+  void setHost(String host);
+  void setPort(int port);
   String getClient();
   void setClient(String client);
   String getUser();
