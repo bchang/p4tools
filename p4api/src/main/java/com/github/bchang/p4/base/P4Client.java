@@ -16,13 +16,16 @@ import java.util.Map;
 public interface P4Client {
   String getHost();
   int getPort();
+  void setHostAndPort(String hostAndPort);
   String getClient();
+  void setClient(String client);
   String getUser();
   void setUser(String u);
 
   void clearStats();
   void printStats();
 
+  void edit(Path[] paths);
   List<Diff2.Entry> diff2(Path left, Path right);
   List<FileLog.Entry> filelog(Path path);
   List<FileLog.Entry> filelog(Path path, int maxrevs);
