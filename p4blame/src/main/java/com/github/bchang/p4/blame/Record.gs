@@ -1,6 +1,8 @@
 package com.github.bchang.p4.blame
 
 uses com.github.bchang.p4.base.FileLog
+uses com.github.bchang.p4.base.IP4BlameLine
+uses com.github.bchang.p4.base.IP4ChangeInfo
 uses java.lang.Integer
 
 class Record implements IP4BlameLine

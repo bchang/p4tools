@@ -1,7 +1,7 @@
 package com.github.bchang.p4.blame.swing;
 
-uses com.github.bchang.p4.blame.IP4BlameLine
-uses com.github.bchang.p4.blame.IP4ChangeInfo
+uses com.github.bchang.p4.base.IP4BlameLine
+uses com.github.bchang.p4.base.IP4ChangeInfo
 
 uses javax.swing.*
 uses javax.swing.plaf.metal.MetalScrollBarUI

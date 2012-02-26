@@ -2,6 +2,7 @@ package com.github.bchang.p4.blame
 
 uses java.lang.Integer
 uses java.util.ArrayList
+uses com.github.bchang.p4.base.IP4BlameLine
 
 class TestBlame implements IP4BlameListener {
 

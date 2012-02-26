@@ -6,16 +6,31 @@ uses java.util.*
 uses gw.util.AutoMap
 uses gw.util.Pair
 uses gw.lang.reflect.interval.IntegerInterval
+uses com.github.bchang.p4.base.IP4ChangeInfo
 
 // need caching
 // better error handling for entry point, handle revs
 class P4Blame implements IP4Blame
 {
+  function blame(path : Path) : List<IP4ChangeInfo> {
+    setup(path)
+    var ret = new ArrayList<IP4ChangeInfo>(RecordList.Count)
+    addListener(new IP4BlameListener() {
+      override function status(status: java.lang.String) {
+      }
+      override function lineDiscovered(line: com.github.bchang.p4.base.IP4BlameLine) {
+        ret[line.Id] = line.ChangeInfo
+      }
+    })
+    start()
+    return ret
+  }
+
   var _p4 : P4Client
   var _logBacktracks : boolean as LogBacktracks = false
   var _listeners = new ArrayList<IP4BlameListener>()
   var _path : Path
-  var _recordList : RecordList
+  var _recordList : RecordList as RecordList
 
   var _filelogCache : Map<String, List<FileLog.Entry>> = {}
   var _diff2Cache = new AutoMap<Pair<Path, Path>, List<Diff2.Entry>>(\ pair -> {
@@ -40,14 +55,19 @@ class P4Blame implements IP4Blame
     if (fstatDepotFile == null) {
       throw new IllegalArgumentException("No such file in depot: ${pathStr}")
     }
-    _path = Path.create(pathStr)
-    if (_path typeis PathRev) {
-      _path = PathRev.create(fstatDepotFile, _path.Rev)
+    var path = Path.create(pathStr)
+    if (path typeis PathRev) {
+      path = PathRev.create(fstatDepotFile, path.Rev)
     }
     else {
-      _path = Path.create(fstatDepotFile)
+      path = Path.create(fstatDepotFile)
     }
-    var lines = _p4.print(_path)
+    return setup(path)
+  }
+
+  function setup(path : Path) : String[] {
+    _path = path
+    var lines = _p4.print(path)
     var records = new ArrayList<Record>()
     for (line in lines index i) {
       records.add(new Record(line, i))

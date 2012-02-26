@@ -1,9 +1,9 @@
 package com.github.bchang.p4.blame.swing;
 
+uses com.github.bchang.p4.base.IP4BlameLine
+uses com.github.bchang.p4.base.IP4ChangeInfo
 uses com.github.bchang.p4.blame.IP4Blame
-uses com.github.bchang.p4.blame.IP4BlameLine
 uses com.github.bchang.p4.blame.IP4BlameListener
-uses com.github.bchang.p4.blame.IP4ChangeInfo
 uses gw.lang.reflect.TypeSystem
 uses javax.swing.*
 uses java.awt.*

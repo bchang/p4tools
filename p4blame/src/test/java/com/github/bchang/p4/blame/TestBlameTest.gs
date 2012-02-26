@@ -1,6 +1,7 @@
 package com.github.bchang.p4.blame
 
 uses com.github.bchang.p4.base.AbstractP4Test
+uses com.github.bchang.p4.base.IP4BlameLine
 uses java.lang.Integer
 uses org.fest.assertions.Assertions
 uses org.fest.assertions.ListAssert

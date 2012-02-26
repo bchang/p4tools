@@ -1,6 +1,6 @@
 package com.github.bchang.p4.blame.swing;
 
-uses com.github.bchang.p4.blame.IP4ChangeInfo
+uses com.github.bchang.p4.base.IP4ChangeInfo
 
 uses gw.lang.reflect.java.IJavaType
 uses java.lang.*
