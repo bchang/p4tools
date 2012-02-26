@@ -104,7 +104,7 @@ class P4ClientImpl implements P4Client {
 
   override function blame(path : Path) : List<IP4ChangeInfo> {
     // TODO - fix nasty reflection
-    var blame = ReflectUtil.construct("com.github.bchang.p4.blame", {this})
+    var blame = ReflectUtil.construct("com.github.bchang.p4.blame.P4Blame", {this})
     return ReflectUtil.invokeMethod(blame, "blame", {path}) as List<IP4ChangeInfo>
   }
 
