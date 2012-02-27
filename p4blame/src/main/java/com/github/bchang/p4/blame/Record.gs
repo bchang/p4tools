@@ -1,13 +1,11 @@
 package com.github.bchang.p4.blame
 
-uses com.github.bchang.p4.base.FileLog
 uses com.github.bchang.p4.base.IP4BlameLine
 uses com.github.bchang.p4.base.IP4ChangeInfo
 uses java.lang.Integer
 
 class Record implements IP4BlameLine
 {
-  var _fileLogEntry : FileLog.Entry as readonly LogEntry // TODO - this can go away when I write ConsoleBlame
   var _changeInfo : IP4ChangeInfo as readonly ChangeInfo
   var _line : String as readonly Line
   var _id : Integer as readonly Id
@@ -17,8 +15,7 @@ class Record implements IP4BlameLine
     _id = i
   }
 
-  function discovered(entry : FileLog.Entry, change : IP4ChangeInfo) {
-    _fileLogEntry = entry
+  function discovered(change : IP4ChangeInfo) {
     _changeInfo = change
   }
 

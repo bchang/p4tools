@@ -154,7 +154,7 @@ class P4Blame implements IP4Blame
       if (recordsChangedWithinPath.Count > 0) {
         var changeInfo = new ChangeInfo(logEntry)
         for (rec in recordsChangedWithinPath) {
-          rec.discovered(logEntry, changeInfo)
+          rec.discovered(changeInfo)
           for (listener in _listeners) {
             listener.lineDiscovered(rec)
           }

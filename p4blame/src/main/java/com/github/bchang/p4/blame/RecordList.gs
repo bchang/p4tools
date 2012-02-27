@@ -34,24 +34,23 @@ class RecordList implements List<Record>
   function writeTo(writer : Writer) {
     if (_title != null) writer.append(_title + "\n")
 
-    var header = { "Change", "Date", "P4 Op", "User", "Path", "", "Line"}
+    var header = { "Change", "Date", "User", "Path", "", "Line"}
 
     var lineNumberColumnWidth = (this.Count as String).length()
 
-    var c = { 7, 11, 9, 10, 78, lineNumberColumnWidth, 1000 }
-    var headerFmt = "%1$-"+c[0]+"s" + " %2$-"+c[1]+"s" + "%3$-"+c[2]+"s" + " %4$-"+c[3]+"s" + " %5$-"+c[4]+"s" + " %6$-"+c[5]+"s %7$-"+c[6]+"s"
-    var rowFmt =    "%1$-"+c[0]+"s" + " %2$-"+c[1]+"s" + "%3$-"+c[2]+"s" + " %4$-"+c[3]+"s" + " %5$-"+c[4]+"s" + " %6$" +c[5]+"s %7$-"+c[6]+"s"
+    var c = { 7, 11, 10, 78, lineNumberColumnWidth, 1000 }
+    var headerFmt = "%1$-"+c[0]+"s" + " %2$-"+c[1]+"s" + " %3$-"+c[2]+"s" + " %4$-"+c[3]+"s" + " %5$-"+c[4]+"s %6$-"+c[5]+"s"
+    var rowFmt =    "%1$-"+c[0]+"s" + " %2$-"+c[1]+"s" + " %3$-"+c[2]+"s" + " %4$-"+c[3]+"s" + " %5$" +c[4]+"s %6$-"+c[5]+"s"
 
     writer.append(String.format(headerFmt, header.toTypedArray()).trim()).append("\n")
     for (rec in this index i) {
       writer.append(String.format(rowFmt, new String[] {
-        rec.LogEntry.Change as String,
-        rec.LogEntry.Date,
-        truncate(rec.LogEntry.Op, c[2], 1, ""),
-        rec.LogEntry.User,
-        truncate(rec.LogEntry.PathRev as String, c[4], 0, "..."),
+        rec.ChangeInfo.Change as String,
+        rec.ChangeInfo.Date,
+        rec.ChangeInfo.User,
+        truncate(rec.ChangeInfo.Path, c[3], 0, "..."),
         (i + 1) as String,
-        truncate(rec.Line, c[6], 1, "...")
+        truncate(rec.Line, c[4], 1, "...")
       }).trim()).append("\n")
     }
   }
@@ -75,7 +74,7 @@ class RecordList implements List<Record>
 
   function isComplete() : boolean {
     for (rec in this) {
-      if (rec != null and rec.LogEntry == null) {
+      if (rec != null and rec.ChangeInfo == null) {
         return false
       }
     }

@@ -218,7 +218,7 @@ class P4BlameTest extends AbstractP4Test {
   }
 
   function assertThat(recordList : RecordList) : ListAssert {
-    var stringEntries = recordList.map( \ rec -> rec.LogEntry.Change + ":" + rec.LogEntry.User + ":" + rec.LogEntry.PathRev + ":" + rec.Line )
+    var stringEntries = recordList.map( \ rec -> rec.ChangeInfo.Change + ":" + rec.ChangeInfo.User + ":" + rec.ChangeInfo.Path + ":" + rec.Line )
     return Assertions.assertThat(stringEntries)
   }
 }
