@@ -7,11 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created with IntelliJ IDEA.
- * User: bchang
- * Date: 2/21/12
- * Time: 12:46 AM
- * To change this template use File | Settings | File Templates.
  */
 public interface P4Client {
   String getHost();
@@ -37,7 +32,7 @@ public interface P4Client {
   Map<String, String> fstat(Path path);
   List<String> print(Path path);
 
-  List<P4Blame.Line> blame(Path path);
+  P4Blame blame();
 
   String run(String op);
   String runUntil(String op, Predicate<String> accept);

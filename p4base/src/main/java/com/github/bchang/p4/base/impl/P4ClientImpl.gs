@@ -103,9 +103,8 @@ class P4ClientImpl implements P4Client {
     return printq.run(path)
   }
 
-  override function blame(path : Path) : List<Line> {
-    var blame = ReflectUtil.construct("com.github.bchang.p4.blame.P4Blame", {this}) as P4Blame
-    return blame.setup(path)
+  override function blame() : P4Blame {
+    return ReflectUtil.construct("com.github.bchang.p4.blame.P4Blame", {this})
   }
 
   protected function run(op : AbstractOperation) {
