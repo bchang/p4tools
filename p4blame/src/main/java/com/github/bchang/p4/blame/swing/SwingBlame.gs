@@ -1,9 +1,9 @@
 package com.github.bchang.p4.blame.swing;
 
-uses com.github.bchang.p4.base.IP4BlameLine
-uses com.github.bchang.p4.base.IP4ChangeInfo
-uses com.github.bchang.p4.blame.IP4Blame
-uses com.github.bchang.p4.blame.IP4BlameListener
+uses com.github.bchang.p4.blame.P4Blame
+uses com.github.bchang.p4.base.P4Blame.Line
+uses com.github.bchang.p4.base.P4Blame.Listener
+uses com.github.bchang.p4.base.P4Blame.ChangeInfo
 uses gw.lang.reflect.TypeSystem
 uses javax.swing.*
 uses java.awt.*
@@ -11,16 +11,17 @@ uses java.awt.event.*
 uses java.io.File
 uses java.lang.*
 uses java.util.concurrent.locks.ReentrantLock
+uses java.util.ArrayList
 
 /**
  */
-class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
+class SwingBlame extends JFrame implements Listener, ActionListener {
 
   var _lock = new ReentrantLock()
-  var _blame : IP4Blame
+  var _blame : P4Blame
 
-  var _lines = new String[0]
-  var _changes = new IP4ChangeInfo[0]
+  var _lines : List<Line>
+  var _changes = new ChangeInfo[0]
 
   var _pathField : JTextField
   var _chooserButton : JButton
@@ -41,7 +42,7 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
   static var BORDERLAYOUT_WEST = "West"
   static var BORDERLAYOUT_NORTH = "North"
 
-  construct(blame : IP4Blame, path : String) {
+  construct(blame : P4Blame, path : String) {
     super("p4blame");
     _me = this
     _blame = blame;
@@ -114,11 +115,11 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
     });
   }
 
-  override function lineDiscovered(line : IP4BlameLine) {
+  override function lineDiscovered(lineNum : int, info : ChangeInfo) {
     EventQueue.invokeLater(new Runnable() {
       override function run() {
-        _changes[line.getId()] = line.ChangeInfo
-        _model.fireTableRowsUpdated(line.getId(), line.getId());
+        _changes[lineNum] = info
+        _model.fireTableRowsUpdated(lineNum, lineNum)
         _me.repaint();
       }
     });
@@ -158,7 +159,7 @@ class SwingBlame extends JFrame implements IP4BlameListener, ActionListener {
         _numDiscovered = 0;
       }
       _lines = _blame.setup(_pathField.getText())
-      _changes = new IP4ChangeInfo[_lines.length]
+      _changes = new ChangeInfo[_lines.Count]
 
       _scrollBarUI.reset(_changes)
       _model.reset(_lines, _changes)

@@ -10,7 +10,8 @@ uses java.lang.StringBuilder
 uses gw.util.ProcessStarter
 uses java.util.HashSet
 uses java.util.Set
-uses com.github.bchang.p4.base.IP4ChangeInfo
+uses com.github.bchang.p4.base.P4Blame
+uses com.github.bchang.p4.base.P4Blame.Line
 uses gw.lang.reflect.ReflectUtil
 
 class P4ClientImpl implements P4Client {
@@ -102,10 +103,9 @@ class P4ClientImpl implements P4Client {
     return printq.run(path)
   }
 
-  override function blame(path : Path) : List<IP4ChangeInfo> {
-    // TODO - fix nasty reflection
-    var blame = ReflectUtil.construct("com.github.bchang.p4.blame.P4Blame", {this})
-    return ReflectUtil.invokeMethod(blame, "blame", {path}) as List<IP4ChangeInfo>
+  override function blame(path : Path) : List<Line> {
+    var blame = ReflectUtil.construct("com.github.bchang.p4.blame.P4Blame", {this}) as P4Blame
+    return blame.setup(path)
   }
 
   protected function run(op : AbstractOperation) {

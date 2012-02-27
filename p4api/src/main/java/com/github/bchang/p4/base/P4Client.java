@@ -37,7 +37,7 @@ public interface P4Client {
   Map<String, String> fstat(Path path);
   List<String> print(Path path);
 
-  List<IP4ChangeInfo> blame(Path path);
+  List<P4Blame.Line> blame(Path path);
 
   String run(String op);
   String runUntil(String op, Predicate<String> accept);

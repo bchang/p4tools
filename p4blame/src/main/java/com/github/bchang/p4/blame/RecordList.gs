@@ -50,7 +50,7 @@ class RecordList implements List<Record>
         rec.ChangeInfo.User,
         truncate(rec.ChangeInfo.Path, c[3], 0, "..."),
         (i + 1) as String,
-        truncate(rec.Line, c[4], 1, "...")
+        truncate(rec.Content, c[4], 1, "...")
       }).trim()).append("\n")
     }
   }

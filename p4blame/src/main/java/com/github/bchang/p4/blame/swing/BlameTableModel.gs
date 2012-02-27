@@ -1,6 +1,7 @@
 package com.github.bchang.p4.blame.swing;
 
-uses com.github.bchang.p4.base.IP4ChangeInfo
+uses com.github.bchang.p4.base.P4Blame.ChangeInfo
+uses com.github.bchang.p4.base.P4Blame.Line
 
 uses gw.lang.reflect.java.IJavaType
 uses java.lang.*
@@ -11,16 +12,16 @@ uses gw.lang.reflect.java.JavaTypes
 /**
  */
 class BlameTableModel extends AbstractTableModel {
-  var _lines = new String[0]
-  var _changes = new IP4ChangeInfo[0]
+  var _lines : List<Line>
+  var _changes = new ChangeInfo[0]
 
-  function reset(lines : String[], changes : IP4ChangeInfo[]) {
+  function reset(lines : List<Line>, changes : ChangeInfo[]) {
     _lines = lines;
     _changes = changes
   }
 
   override property get RowCount() : int {
-    return _lines.length;
+    return _lines.Count
   }
 
   override property get ColumnCount() : int {

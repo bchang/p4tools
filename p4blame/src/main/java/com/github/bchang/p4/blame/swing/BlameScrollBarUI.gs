@@ -1,7 +1,7 @@
 package com.github.bchang.p4.blame.swing;
 
-uses com.github.bchang.p4.base.IP4BlameLine
-uses com.github.bchang.p4.base.IP4ChangeInfo
+uses com.github.bchang.p4.base.P4Blame.Line
+uses com.github.bchang.p4.base.P4Blame.ChangeInfo
 
 uses javax.swing.*
 uses javax.swing.plaf.metal.MetalScrollBarUI
@@ -14,9 +14,9 @@ class BlameScrollBarUI extends MetalScrollBarUI {
   static var COLOR_BLOCK = new Color(153, 204, 255)
   static var COLOR_BLOCK_SHADOW = new Color(218, 255, 255)
 
-  var _changes = new IP4ChangeInfo[0]
+  var _changes = new ChangeInfo[0]
 
-  function reset(changes : IP4ChangeInfo[]) {
+  function reset(changes : ChangeInfo[]) {
     _changes = changes
   }
 

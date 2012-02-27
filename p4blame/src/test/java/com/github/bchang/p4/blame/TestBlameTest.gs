@@ -1,7 +1,8 @@
 package com.github.bchang.p4.blame
 
 uses com.github.bchang.p4.base.AbstractP4Test
-uses com.github.bchang.p4.base.IP4BlameLine
+uses com.github.bchang.p4.base.P4Blame.ChangeInfo
+uses com.github.bchang.p4.base.P4Blame.Line
 uses java.lang.Integer
 uses org.fest.assertions.Assertions
 uses org.fest.assertions.ListAssert
@@ -11,14 +12,14 @@ class TestBlameTest extends AbstractP4Test {
   function testPreStart() {
     var file = newUniqueFile()
     var change = createFileAndSubmit(file,
-        "1\n" +
-        "2\n" +
-        "3\n")
+        "a\n" +
+        "b\n" +
+        "c\n")
 
     var blame = new P4Blame(P4)
     var testBlame = new TestBlame(blame)
     var lines = testBlame.setup(file.Path)
-    Assertions.assertThat(lines.toList()).containsExactly({"1", "2", "3"})
+    Assertions.assertThat(lines.toList().map( \ elt -> elt.Content )).containsExactly({"a", "b", "c"})
   }
 
   function testBlameForFileWithOneRev() {
@@ -32,7 +33,7 @@ class TestBlameTest extends AbstractP4Test {
     var testBlame = new TestBlame(blame)
     var lines = testBlame.setup(file.Path)
     testBlame.start()
-    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {0, 1, 2})
+    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly({0, 1, 2})
     assertThat(testBlame.Results.toList()).containsExactly({change, change, change})
   }
 
@@ -55,7 +56,7 @@ class TestBlameTest extends AbstractP4Test {
     var testBlame = new TestBlame(blame)
     var lines = testBlame.setup(file.Path)
     testBlame.start()
-    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {2, 1, 0})
+    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly({2, 1, 0})
     assertThat(testBlame.Results.toList()).containsExactly({change1, change2, change3})
   }
 
@@ -75,7 +76,7 @@ class TestBlameTest extends AbstractP4Test {
     var testBlame = new TestBlame(blame)
     var lines = testBlame.setup(file.Path)
     testBlame.start()
-    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {2, 1, 0})
+    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly({2, 1, 0})
     assertThat(testBlame.Results.toList()).containsExactly({change1, change2, change3})
   }
 
@@ -97,7 +98,7 @@ class TestBlameTest extends AbstractP4Test {
     var testBlame = new TestBlame(blame)
     var lines = testBlame.setup(fileA.Path)
     testBlame.start()
-    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {0, 2, 1})
+    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly({0, 2, 1})
     assertThat(testBlame.Results.toList()).containsExactly({change3, change1, change3})
   }
 
@@ -123,7 +124,7 @@ class TestBlameTest extends AbstractP4Test {
     var testBlame = new TestBlame(blame)
     var lines = testBlame.setup(fileA.Path)
     testBlame.start()
-    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {2, 0, 1})
+    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly({2, 0, 1})
     assertThat(testBlame.Results.toList()).containsExactly({change3, change1, change4})
   }
 
@@ -149,7 +150,7 @@ class TestBlameTest extends AbstractP4Test {
     var testBlame = new TestBlame(blame)
     var lines = testBlame.setup(fileA.Path)
     testBlame.start()
-    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {2, 1, 0})
+    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly({2, 1, 0})
     assertThat(testBlame.Results.toList()).containsExactly({change1, change4, change3})
   }
 
@@ -175,7 +176,7 @@ class TestBlameTest extends AbstractP4Test {
     var testBlame = new TestBlame(blame)
     var lines = testBlame.setup(fileA.Path)
     testBlame.start()
-    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {0, 2, 1})
+    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly({0, 2, 1})
     assertThat(testBlame.Results.toList()).containsExactly({change4, change1, change3})
   }
 
@@ -198,12 +199,12 @@ class TestBlameTest extends AbstractP4Test {
     var testBlame = new TestBlame(blame)
     var lines = testBlame.setup(fileA.Path)
     testBlame.start()
-    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly(new Integer[] {2, 0, 1})
+    Assertions.assertThat(testBlame.DiscoverySequenceByIndex).containsExactly({2, 0, 1})
     assertThat(testBlame.Results.toList()).containsExactly({change1, change1, change3})
   }
 
-  private function assertThat(testBlameResults : List<IP4BlameLine>) : ListAssert {
-    var changes = testBlameResults.map( \ resultLine -> resultLine.ChangeInfo.Change )
+  private function assertThat(testBlameResults : List<ChangeInfo>) : ListAssert {
+    var changes = testBlameResults.map( \ resultInfo -> resultInfo.Change )
     return Assertions.assertThat(changes)
   }
 

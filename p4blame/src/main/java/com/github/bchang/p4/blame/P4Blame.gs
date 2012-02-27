@@ -6,29 +6,17 @@ uses java.util.*
 uses gw.util.AutoMap
 uses gw.util.Pair
 uses gw.lang.reflect.interval.IntegerInterval
-uses com.github.bchang.p4.base.IP4ChangeInfo
+uses com.github.bchang.p4.base.P4Blame.ChangeInfo
+uses com.github.bchang.p4.base.P4Blame.Line
+uses com.github.bchang.p4.base.P4Blame.Listener
 
 // need caching
 // better error handling for entry point, handle revs
-class P4Blame implements IP4Blame
+class P4Blame implements com.github.bchang.p4.base.P4Blame
 {
-  function blame(path : Path) : List<IP4ChangeInfo> {
-    setup(path)
-    var ret = new ArrayList<IP4ChangeInfo>(RecordList.Count)
-    addListener(new IP4BlameListener() {
-      override function status(status: java.lang.String) {
-      }
-      override function lineDiscovered(line: com.github.bchang.p4.base.IP4BlameLine) {
-        ret[line.Id] = line.ChangeInfo
-      }
-    })
-    start()
-    return ret
-  }
-
   var _p4 : P4Client
   var _logBacktracks : boolean as LogBacktracks = false
-  var _listeners = new ArrayList<IP4BlameListener>()
+  var _listeners = new ArrayList<Listener>()
   var _path : Path
   var _recordList : RecordList as RecordList
 
@@ -45,11 +33,11 @@ class P4Blame implements IP4Blame
     _p4 = p4
   }
 
-  override function addListener(listener : IP4BlameListener) {
+  override function addListener(listener : Listener) {
     _listeners.add(listener)
   }
 
-  override function setup(pathStr : String) : String[] {
+  function setup(pathStr : String) : List<Line> {
     var fstatDepotFile : String
     fstatDepotFile = _p4.fstat(pathStr.asPath())["depotFile"]
     if (fstatDepotFile == null) {
@@ -65,7 +53,7 @@ class P4Blame implements IP4Blame
     return setup(path)
   }
 
-  function setup(path : Path) : String[] {
+  override function setup(path : Path) : List<Line> {
     _path = path
     var lines = _p4.print(path)
     var records = new ArrayList<Record>()
@@ -73,7 +61,7 @@ class P4Blame implements IP4Blame
       records.add(new Record(line, i))
     }
     _recordList = new RecordList(_path as String, records)
-    return lines.toArray(new String[lines.Count])
+    return _recordList
   }
 
   override function start() {
@@ -152,11 +140,11 @@ class P4Blame implements IP4Blame
       }
 
       if (recordsChangedWithinPath.Count > 0) {
-        var changeInfo = new ChangeInfo(logEntry)
+        var changeInfo = new ChangeInfoImpl(logEntry)
         for (rec in recordsChangedWithinPath) {
           rec.discovered(changeInfo)
           for (listener in _listeners) {
-            listener.lineDiscovered(rec)
+            listener.lineDiscovered(rec.Id, rec.ChangeInfo)
           }
         }
       }
@@ -211,7 +199,7 @@ class P4Blame implements IP4Blame
     return new String(bytes)
   }
 
-  class ChangeInfo implements IP4ChangeInfo {
+  class ChangeInfoImpl implements ChangeInfo {
     var _change : int as Change
     var _date : String as Date
     var _user : String as User

@@ -1,13 +1,13 @@
 package com.github.bchang.p4.blame
 
-uses com.github.bchang.p4.base.IP4BlameLine
-uses com.github.bchang.p4.base.IP4ChangeInfo
+uses com.github.bchang.p4.base.P4Blame.Line
+uses com.github.bchang.p4.base.P4Blame.ChangeInfo
 uses java.lang.Integer
 
-class Record implements IP4BlameLine
+class Record implements Line
 {
-  var _changeInfo : IP4ChangeInfo as readonly ChangeInfo
-  var _line : String as readonly Line
+  var _changeInfo : ChangeInfo as readonly ChangeInfo
+  var _line : String as readonly Content
   var _id : Integer as readonly Id
 
   construct(lineArg : String, i : int) {
@@ -15,7 +15,7 @@ class Record implements IP4BlameLine
     _id = i
   }
 
-  function discovered(change : IP4ChangeInfo) {
+  function discovered(change : ChangeInfo) {
     _changeInfo = change
   }
 
