@@ -21,7 +21,7 @@ class BlameTableModel extends AbstractTableModel {
   }
 
   override property get RowCount() : int {
-    return _lines.Count
+    return _lines?.Count
   }
 
   override property get ColumnCount() : int {
@@ -74,7 +74,7 @@ class BlameTableModel extends AbstractTableModel {
     case 3:
       return Integer.toString(row)
     case 4:
-      return _lines[row];
+      return _lines.get(row)
     default:
       return null;
     }
