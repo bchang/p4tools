@@ -5,20 +5,19 @@ uses java.io.BufferedWriter
 uses java.io.OutputStreamWriter
 uses java.lang.System
 uses com.github.bchang.p4.base.FileLog
-uses java.util.List
+uses java.util.ArrayList
 
-class RecordList implements List<Record>
+class RecordList extends ArrayList<Record>
 {
-  delegate _del : List<Record> represents List<Record>
   var _title : String
 
   construct(title : String, records : List<Record>) {
-    _del = records
+    super(records)
     _title = title
   }
 
   final function dup() : RecordList {
-    return new RecordList(null, _del.copy())
+    return new RecordList(null, this)
   }
 
   function display() {
