@@ -45,7 +45,7 @@ class FileLogImpl extends AbstractOperation implements FileLog {
         :PathRev = PathRev.create(_path.Path, dict["rev" + i].toInt()),
         :Change = dict["change" + i].toInt(),
         :Op = dict["action" + i],
-        :Date = DATE_FMT.format(new Date(dict["time" + i].toLong())),
+        :Date = DATE_FMT.format(new Date(dict["time" + i].toLong() * 1000)),
         :User = dict["user" + i]
       }
       var j = 0
