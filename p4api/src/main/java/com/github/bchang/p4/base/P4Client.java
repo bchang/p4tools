@@ -1,8 +1,5 @@
 package com.github.bchang.p4.base;
 
-import gw.util.Predicate;
-import gw.util.ProcessStarter;
-
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +34,5 @@ public interface P4Client {
   List<P4UnmarshalledObject> runForObjects(List<String> op);
   List<String> runForRawOutput(List<String> op);
   String run(List<String> op);
-
-  void exec(String op, ProcessStarter.OutputHandler handler);
-  void run(String op, ProcessStarter.ProcessHandler handler);
+  String run(List<String> op, String input);
 }

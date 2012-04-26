@@ -118,7 +118,7 @@ abstract class AbstractP4Test extends TestClass {
       "LineEnd: local\n" +
       "View:\n" +
       "  //depot/... //${_p4.Client}/...\n"
-    print(p4Impl("client -i", clientspec))
+    print(p4Impl({"client", "-i"}, clientspec))
   }
 
   function newBranch(branchName : String, desc : String, view : String) {
@@ -128,7 +128,7 @@ abstract class AbstractP4Test extends TestClass {
       "  ${desc}\n" +
       "View:\n" +
       "  ${view}\n"
-    print(p4Impl("branch -i", spec))
+    print(p4Impl({"branch", "-i"}, spec))
   }
 
   function newChange(desc : String) : int {
@@ -138,7 +138,7 @@ abstract class AbstractP4Test extends TestClass {
       "Status: new\n" +
       "Description:\n" +
       "  ${desc}\nFiles:\n"
-    var cmdOutput = p4Impl("change -i", spec)
+    var cmdOutput = p4Impl({"change", "-i"}, spec)
     var matcher = Pattern.compile("^Change (\\d+) .*").matcher(cmdOutput)
     return matcher.matches() ? Integer.parseInt(matcher.group(1)) : 0
   }
@@ -266,22 +266,10 @@ abstract class AbstractP4Test extends TestClass {
 
 
   private function p4Impl(op : List<String>) : String {
-    return _p4.runForRawOutput(op).join("\n")
+    return _p4.run(op)
   }
 
-  private function p4Impl(op : String, input : String) : String {
-    var out = new StringBuilder()
-    _p4.run(op, \ proc ->{
-      proc.write(input)
-      proc.closeStdin()
-
-      // this is retarded...
-      out.append(proc.readLine())
-      var stderrLine = proc.readStderrLine()
-      if (stderrLine != null and stderrLine.length() > 0) {
-        print(stderrLine)
-      }
-    })
-    return out.toString()
+  private function p4Impl(op : List<String>, input : String) : String {
+    return _p4.run(op, input)
   }
 }

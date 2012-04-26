@@ -5,9 +5,7 @@ uses com.github.bchang.p4.base.P4Factory
 uses com.github.bchang.p4.base.Diff2
 uses java.util.Map
 uses com.github.bchang.p4.base.Path
-uses gw.util.Shell
 uses java.lang.StringBuilder
-uses gw.util.ProcessStarter
 uses java.io.InputStreamReader
 uses java.util.ArrayList
 uses java.util.List
@@ -22,6 +20,8 @@ uses java.lang.ProcessBuilder
 uses java.io.BufferedReader
 uses java.lang.Process
 uses com.github.bchang.p4.base.P4UnmarshalledObject
+uses java.io.BufferedWriter
+uses java.io.OutputStreamWriter
 
 class P4ClientImpl implements P4Client {
 
@@ -189,8 +189,17 @@ class P4ClientImpl implements P4Client {
   }
 
   override function run(op : List<String>) : String {
+    return run(op, null)
+  }
+
+  override function run(op : List<String>, input : String) : String {
     var output = new StringBuilder()
     var process = p4process(op)
+    if (input != null) {
+      using (var writer = new BufferedWriter(new OutputStreamWriter(process.OutputStream, "UTF-8"))) {
+        writer.write(input)
+      }
+    }
     using (var reader = new BufferedReader(new InputStreamReader(process.InputStream, "UTF-8"))) {
       while (true) {
         var line = reader.readLine()
@@ -201,15 +210,7 @@ class P4ClientImpl implements P4Client {
       }
     }
     process.waitFor()
-    return output.toString()
-  }
-
-  override function exec(op : String, handler : ProcessStarter.OutputHandler) {
-    p4process(op).withStdOutHandler(handler).exec()
-  }
-
-  override function run(op : String, handler : ProcessStarter.ProcessHandler) {
-    p4process(op).processWithHandler(handler)
+    return output.toString().trim()
   }
 
   private function p4process(cmd: List<String>) : Process {
@@ -232,27 +233,6 @@ class P4ClientImpl implements P4Client {
       builder.environment()["P4USER"] = _user
     }
     return builder.redirectErrorStream(true).start()
-  }
-
-  private function p4process(op : String) : ProcessStarter {
-    var cmd = "p4 ${op}"
-    if (_verbose) {
-      print("> ${cmd}")
-    }
-    var process = Shell.buildProcess(cmd)
-    if (_host != null) {
-      process.Environment["P4HOST"] = _host
-    }
-    if (_port != null && _port != 0) {
-      process.Environment["P4PORT"] = _port as String
-    }
-    if (_client != null) {
-      process.Environment["P4CLIENT"] = _client
-    }
-    if (_user != null) {
-      process.Environment["P4USER"] = _user
-    }
-    return process
   }
 
   class Stats {

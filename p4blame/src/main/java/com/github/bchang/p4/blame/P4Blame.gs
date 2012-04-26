@@ -205,26 +205,7 @@ class P4Blame implements com.github.bchang.p4.base.P4Blame
     var _user : String as User
     var _path : String as Path
     var _lazyDescription = LazyVar.make(\ -> {
-      var desc : LinkedList<String>
-      _p4.exec("change -o ${Change}", \ line -> {
-        if (desc != null) {
-          if (line.startsWith("\t")) {
-            line = line.substring(1) // ignore the leading \t
-          }
-          desc.add(line)
-        } else if (line.startsWith("Description:")) {
-          desc = new LinkedList<String>()
-        }
-      })
-      if (desc == null) {
-        throw new IllegalStateException("could not find descBuilder for Change ${Change}")
-      }
-      while (desc.Count > 0 && desc.Last.trim().length() == 0) {
-        desc.removeLast()
-      }
-      var descBuilder = new StringBuilder()
-      descBuilder.append(desc.join("\n"))
-      return descBuilder.toString()
+      return _p4.runForObjects({"change", "-o"}).single().Dict["Description"].trim()
     })
 
     construct(logEntry : FileLog.Entry) {
