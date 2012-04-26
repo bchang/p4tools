@@ -22,6 +22,8 @@ uses java.lang.Process
 uses com.github.bchang.p4.base.P4UnmarshalledObject
 uses java.io.BufferedWriter
 uses java.io.OutputStreamWriter
+uses java.nio.ByteBuffer
+uses java.nio.ByteOrder
 
 class P4ClientImpl implements P4Client {
 
@@ -145,7 +147,7 @@ class P4ClientImpl implements P4Client {
 
         var word = new byte[4]
         input.read(word)
-        var size = word[0]
+        var size = decodeFromByteArray(word)
 
         var keyBytes = new byte[size]
         input.read(keyBytes)
@@ -154,7 +156,7 @@ class P4ClientImpl implements P4Client {
         b = input.read() // gobble 's'
         if (b == 0x73) {
           input.read(word)
-          size = word[0]
+          size = decodeFromByteArray(word)
 
           var valBytes = new byte[size]
           input.read(valBytes)
@@ -164,12 +166,16 @@ class P4ClientImpl implements P4Client {
         }
         else if (b == 0x69) {
           input.read(word)
-          p4obj.addCode(key, word[0])
+          p4obj.addCode(key, decodeFromByteArray(word))
         }
       }
     }
     process.waitFor()
     return p4objs
+  }
+
+  private function decodeFromByteArray(word: byte[]) : int {
+    return ByteBuffer.wrap(word).order(ByteOrder.LITTLE_ENDIAN).Int
   }
 
   override function runForRawOutput(op : List<String>) : List<String> {

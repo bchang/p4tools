@@ -205,7 +205,8 @@ class P4Blame implements com.github.bchang.p4.base.P4Blame
     var _user : String as User
     var _path : String as Path
     var _lazyDescription = LazyVar.make(\ -> {
-      return _p4.runForObjects({"change", "-o"}).single().Dict["Description"].trim()
+      var objs = _p4.runForObjects({"change", "-o", Change as String})
+      return objs.single().Dict["Description"].trim()
     })
 
     construct(logEntry : FileLog.Entry) {
