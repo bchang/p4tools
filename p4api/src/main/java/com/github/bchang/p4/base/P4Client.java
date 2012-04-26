@@ -34,6 +34,10 @@ public interface P4Client {
 
   P4Blame blame();
 
+  List<P4UnmarshalledObject> runForObjects(List<String> op);
+  List<String> runForRawOutput(List<String> op);
+  void run(List<String> op);
+
   String run(String op);
   String runUntil(String op, Predicate<String> accept);
   void exec(String op);

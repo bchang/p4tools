@@ -1,5 +1,6 @@
 package com.github.bchang.p4.base.impl
 
+uses java.util.ArrayList
 uses com.github.bchang.p4.base.Path
 
 /**
@@ -14,11 +15,13 @@ class FileOperation extends AbstractOperation {
     _paths = paths
   }
 
-  override function getCommand() : String {
+  override function getCommand() : List<String> {
     // TODO might have to worry about the command line exceeding the shell's max length?
-    return _p4Op + " " + _paths.join(" ")
-  }
-
-  override function handleLine(line : String) {
+    var command = new ArrayList<String>()
+    command.add(_p4Op)
+    for (path in _paths) {
+      command.add(path as String)
+    }
+    return command
   }
 }

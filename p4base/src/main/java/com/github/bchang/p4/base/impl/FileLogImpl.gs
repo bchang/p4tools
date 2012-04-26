@@ -6,15 +6,16 @@ uses java.util.regex.Pattern
 uses com.github.bchang.p4.base.PathRev
 uses com.github.bchang.p4.base.P4Factory
 uses java.util.List
+uses java.util.Date
+uses java.text.SimpleDateFormat
+uses java.lang.Integer
 
 class FileLogImpl extends AbstractOperation implements FileLog {
 
-  static var ENTRY_PAT = Pattern.compile("\\.\\.\\. #(\\d+) change (\\d+) ([\\w/]+) on ([\\d/]+) by (\\w+).*")
-  static var DETAIL_PAT = Pattern.compile("\\.\\.\\. \\.\\.\\. (\\w+)( (\\w+))? (([^#]+)#(\\d+)(,#(\\d+))?)")
+  static var DATE_FMT = new SimpleDateFormat("yyyy/MM/dd")
 
   var _path : Path
   var _maxRevs : int
-  var _list : List<EntryImpl>
 
   protected construct(client : P4ClientImpl) {
     super(client)
@@ -29,54 +30,57 @@ class FileLogImpl extends AbstractOperation implements FileLog {
       p = PathRev.create(p.Path, p.EndRev)
     }
     _path = p
-    _maxRevs = maxRevs
-    _list = {}
-    run()
-    return _list
-  }
+    _maxRevs = maxRevs == 0 ? Integer.MAX_VALUE : maxRevs
+    var list : List<EntryImpl> = {}
+    var p4obj = runForObjects().single()
+    var dict = p4obj.Dict
 
-  override function getCommand() : String {
-    var maxRevsArg = _maxRevs > 0 ? "-m ${_maxRevs} " : ""
-    return "filelog ${maxRevsArg}\"${_path.toString()}\""
-  }
-
-  override function handleLine(line : String) {
-    var entryMatcher = ENTRY_PAT.matcher(line)
-    if (entryMatcher.matches()) {
+    var i = 0
+    while (true) {
+      if (i == _maxRevs || dict["rev" + i] == null) {
+        break
+      }
       var entry = new EntryImpl() {
-        :PathRev = PathRev.create(_path.Path, entryMatcher.group(1).toInt()),
-        :Change = entryMatcher.group(2).toInt(),
-        :Op = entryMatcher.group(3),
-        :Date = entryMatcher.group(4),
-        :User = entryMatcher.group(5)
+        :PathRev = PathRev.create(_path.Path, dict["rev" + i].toInt()),
+        :Change = dict["change" + i].toInt(),
+        :Op = dict["action" + i],
+        :Date = DATE_FMT.format(new Date(dict["time" + i].toLong())),
+        :User = dict["user" + i]
       }
-      _list.add(entry)
-    }
-    else {
-      var detailMatcher = DETAIL_PAT.matcher(line)
-      if (detailMatcher.matches()) {
+      var j = 0
+      while (true) {
+        var how = dict["how" + i + "," + j]
+        if (how == null) {
+          break
+        }
+        var howSplit = how.split(" ")
         var detail = new DetailImpl() {
-        :SubOp = detailMatcher.group(1),
-        :Direction = detailMatcher.group(3),
-        :PathRev = Path.create(detailMatcher.group(4)) as PathRev
-      }
-
+          :SubOp = howSplit[0],
+          :Direction = howSplit[1],
+          :PathRev = PathRev.create(dict["file" + i + "," + j], dict["erev" + i + "," + j].substring(1).toInt())
+        }
         if (detail.Direction == "from") {
-          _list.last().Sources.add(detail)
+          entry.Sources.add(detail)
         }
         else if (detail.Direction == "into") {
-          _list.last().Targets.add(detail)
+          entry.Targets.add(detail)
         }
-        else {
-          if (Verbose) {
-            print("ignoring file log entry detail line: \"${line}\"")
-          }
-        }
+        j++
       }
-      else if (!line.startsWith("//depot/")) {
-        throw "unrecognized line while parsing file log: ${line}"
-      }
+      list.add(entry)
+      i++
     }
+    return list
+  }
+
+  override function getCommand() : List<String> {
+    var command = {"filelog"}
+    if (_maxRevs > 0) {
+      command.add("-m")
+      command.add(_maxRevs as String)
+    }
+    command.add(_path as String)
+    return command
   }
 
   static class EntryImpl implements FileLog.Entry {

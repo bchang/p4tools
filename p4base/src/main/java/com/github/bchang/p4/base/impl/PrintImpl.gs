@@ -9,30 +9,13 @@ class PrintImpl extends AbstractOperation implements Print {
   }
 
   var _path : Path
-  var _list : List<String>
-  var _firstLine = true
 
   override function run( path : Path ) : List<String> {
     _path = path
-    _list = {}
-    run()
-    return _list
+    return runForRawOutput()
   }
 
-  override function getCommand() : String {
-    return "print \"${_path}\""
+  override function getCommand() : List<String> {
+    return {"print", "-q", _path as String}
   }
-
-  override function handleLine( line : String ) {
-    if (_firstLine) {
-      if (!line.matches("//depot/[^#]+#\\d+ - .*")) {
-        throw "PrintImpl: unexpected format of first line: ${line}"
-      }
-      _firstLine = false
-    }
-    else {
-      _list.add(line)
-    }
-  }
-
 }

@@ -8,11 +8,20 @@ uses com.github.bchang.p4.base.Path
 uses gw.util.Shell
 uses java.lang.StringBuilder
 uses gw.util.ProcessStarter
+uses java.io.InputStreamReader
+uses java.util.ArrayList
+uses java.util.List
+uses java.util.HashMap
 uses java.util.HashSet
+uses java.util.Map
 uses java.util.Set
 uses com.github.bchang.p4.base.P4Blame
 uses com.github.bchang.p4.base.P4Blame.Line
 uses gw.lang.reflect.ReflectUtil
+uses java.lang.ProcessBuilder
+uses java.io.BufferedReader
+uses java.lang.Process
+uses com.github.bchang.p4.base.P4UnmarshalledObject
 
 class P4ClientImpl implements P4Client {
 
@@ -107,11 +116,78 @@ class P4ClientImpl implements P4Client {
     return ReflectUtil.construct("com.github.bchang.p4.blame.P4Blame", {this})
   }
 
-  protected function run(op : AbstractOperation) {
-    p4process(op.getCommand())
-         .withStdOutHandler(\ line -> op.handleLine(line))
-         .withStdErrHandler(\ line -> op.handleLine(line))
-         .exec()
+  override function runForObjects(op : List<String>) : List<P4UnmarshalledObject> {
+    op.add(0, "-G")
+
+    var p4objs = new ArrayList<P4UnmarshalledObject>()
+    var p4obj = new P4UnmarshalledObject()
+    var process = p4process(op)
+    using (var input = process.InputStream) {
+      var b = input.read() // gobble leading 0x7B
+      while (true) {
+        b = input.read() // gobble 's'
+        if (b == -1 || b == 0x0A) {
+          break
+        }
+        if (b == 0x30) {
+          p4objs.add(p4obj)
+          p4obj = null
+          input.read() // gobble leading 0x7B
+          continue
+        }
+        else if (p4obj == null) {
+          p4obj = new P4UnmarshalledObject()
+        }
+
+        if (b != 0x73) {
+          throw "oopsie"
+        }
+
+        var word = new byte[4]
+        input.read(word)
+        var size = word[0]
+
+        var keyBytes = new byte[size]
+        input.read(keyBytes)
+        var key = new String(keyBytes, "UTF-8")
+
+        b = input.read() // gobble 's'
+        if (b == 0x73) {
+          input.read(word)
+          size = word[0]
+
+          var valBytes = new byte[size]
+          input.read(valBytes)
+          var val = new String(valBytes, "UTF-8")
+
+          p4obj.addDictEntry(key, val)
+        }
+        else if (b == 0x69) {
+          input.read(word)
+          p4obj.addCode(key, word[0])
+        }
+      }
+    }
+    return p4objs
+  }
+
+  override function runForRawOutput(op : List<String>) : List<String> {
+    var output = new ArrayList<String>()
+    var process = p4process(op)
+    using (var reader = new BufferedReader(new InputStreamReader(process.InputStream, "UTF-8"))) {
+      while (true) {
+        var line = reader.readLine()
+        if (line == null) {
+          break
+        }
+        output.add(line)
+      }
+    }
+    return output
+  }
+
+  override function run(op : List<String>) {
+    p4process(op)
   }
 
   override function run(op : String) : String {
@@ -140,6 +216,28 @@ class P4ClientImpl implements P4Client {
 
   override function run(op : String, handler : ProcessStarter.ProcessHandler) {
     p4process(op).processWithHandler(handler)
+  }
+
+  private function p4process(cmd: List<String>) : Process {
+    cmd.add(0, "p4")
+    if (_verbose) {
+      print("> " + cmd.join(" "))
+    }
+
+    var builder = new ProcessBuilder(cmd)
+    if (_host != null) {
+      builder.environment()["P4HOST"] = _host
+    }
+    if (_port != null && _port != 0) {
+      builder.environment()["P4PORT"] = _port as String
+    }
+    if (_client != null) {
+      builder.environment()["P4CLIENT"] = _client
+    }
+    if (_user != null) {
+      builder.environment()["P4USER"] = _user
+    }
+    return builder.start()
   }
 
   private function p4process(op : String) : ProcessStarter {

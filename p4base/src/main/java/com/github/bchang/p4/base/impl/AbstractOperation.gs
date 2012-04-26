@@ -1,5 +1,7 @@
 package com.github.bchang.p4.base.impl
 
+uses com.github.bchang.p4.base.P4UnmarshalledObject
+
 abstract class AbstractOperation {
 
   var _client : P4ClientImpl
@@ -8,17 +10,19 @@ abstract class AbstractOperation {
     _client = client
   }
 
+  protected function runForObjects() : List<P4UnmarshalledObject> {
+    return _client.runForObjects(getCommand())
+  }
+
+  protected function runForRawOutput() : List<String> {
+    return _client.runForRawOutput(getCommand())
+  }
+
   protected function run() {
-    _client.run(this)
+    _client.run(getCommand())
   }
 
-  abstract function getCommand() : String
-
-  abstract function handleLine(line : String)
-
-  function handleErrLine( line : String ) {
-    throw "ow ow ow! ${line}"
-  }
+  abstract function getCommand() : List<String>
 
   property get Verbose() : boolean { return _client.Verbose }
 }

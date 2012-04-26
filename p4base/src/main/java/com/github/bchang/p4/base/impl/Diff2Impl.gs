@@ -28,15 +28,17 @@ class Diff2Impl extends AbstractOperation implements Diff2 {
     _left = left
     _right = right
     _list = {}
-    run()
+    for (line in runForRawOutput()) {
+      handleLine(line)
+    }
     return _list
   }
 
-  override function getCommand() : String {
-    return "diff2 \"${_left.toString()}\" \"${_right.toString()}\""
+  override function getCommand() : List<String> {
+    return {"diff2", _left as String, _right as String}
   }
 
-  override function handleLine( line : String ) {
+  private function handleLine( line : String ) {
     var matcher = CODE_PAT.matcher(line)
     if (matcher.matches()) {
       _list.add(new EntryImpl(matcher.group(3), parseRange(matcher.group(1)), parseRange(matcher.group(4))))
