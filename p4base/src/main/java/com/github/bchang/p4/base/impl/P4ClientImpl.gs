@@ -168,6 +168,7 @@ class P4ClientImpl implements P4Client {
         }
       }
     }
+    process.waitFor()
     return p4objs
   }
 
@@ -183,11 +184,24 @@ class P4ClientImpl implements P4Client {
         output.add(line)
       }
     }
+    process.waitFor()
     return output
   }
 
-  override function run(op : List<String>) {
-    p4process(op)
+  override function run(op : List<String>) : String {
+    var output = new StringBuilder()
+    var process = p4process(op)
+    using (var reader = new BufferedReader(new InputStreamReader(process.InputStream, "UTF-8"))) {
+      while (true) {
+        var line = reader.readLine()
+        if (line == null) {
+          break
+        }
+        output.append(line).append("\n")
+      }
+    }
+    process.waitFor()
+    return output.toString()
   }
 
   override function exec(op : String, handler : ProcessStarter.OutputHandler) {
@@ -217,7 +231,7 @@ class P4ClientImpl implements P4Client {
     if (_user != null) {
       builder.environment()["P4USER"] = _user
     }
-    return builder.start()
+    return builder.redirectErrorStream(true).start()
   }
 
   private function p4process(op : String) : ProcessStarter {

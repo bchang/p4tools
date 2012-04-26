@@ -36,7 +36,7 @@ public interface P4Client {
 
   List<P4UnmarshalledObject> runForObjects(List<String> op);
   List<String> runForRawOutput(List<String> op);
-  void run(List<String> op);
+  String run(List<String> op);
 
   void exec(String op, ProcessStarter.OutputHandler handler);
   void run(String op, ProcessStarter.ProcessHandler handler);
