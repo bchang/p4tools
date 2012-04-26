@@ -9,6 +9,7 @@ uses java.util.List
 uses java.util.Date
 uses java.text.SimpleDateFormat
 uses java.lang.Integer
+uses java.util.StringTokenizer
 
 class FileLogImpl extends AbstractOperation implements FileLog {
 
@@ -53,17 +54,19 @@ class FileLogImpl extends AbstractOperation implements FileLog {
         if (how == null) {
           break
         }
-        var howSplit = how.split(" ")
-        var detail = new DetailImpl() {
-          :SubOp = howSplit[0],
-          :Direction = howSplit[1],
-          :PathRev = PathRev.create(dict["file" + i + "," + j], dict["erev" + i + "," + j].substring(1).toInt())
-        }
-        if (detail.Direction == "from") {
-          entry.Sources.add(detail)
-        }
-        else if (detail.Direction == "into") {
-          entry.Targets.add(detail)
+        var tokenizer = new StringTokenizer(how)
+        if (tokenizer.countTokens() == 2) {
+          var detail = new DetailImpl() {
+            :SubOp = tokenizer.nextToken(),
+            :Direction = tokenizer.nextToken(),
+            :PathRev = PathRev.create(dict["file" + i + "," + j], dict["erev" + i + "," + j].substring(1).toInt())
+          }
+          if (detail.Direction == "from") {
+            entry.Sources.add(detail)
+          }
+          else if (detail.Direction == "into") {
+            entry.Targets.add(detail)
+          }
         }
         j++
       }
