@@ -38,9 +38,6 @@ public interface P4Client {
   List<String> runForRawOutput(List<String> op);
   void run(List<String> op);
 
-  String run(String op);
-  String runUntil(String op, Predicate<String> accept);
-  void exec(String op);
   void exec(String op, ProcessStarter.OutputHandler handler);
   void run(String op, ProcessStarter.ProcessHandler handler);
 }

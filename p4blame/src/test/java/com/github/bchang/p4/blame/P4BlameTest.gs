@@ -168,7 +168,7 @@ class P4BlameTest extends AbstractP4Test {
     moveFileAndSubmit(fileA, fileB)
 
     print("Test moving ${fileA.Path} to ${fileB.Path}")
-    p4("integ -f \"${fileB.Path}\" \"${fileA.Path}\"")
+    p4({"integ", "-f", fileB.Path, fileA.Path })
     deleteFile(fileB)
     editFile(fileA, "A\nB\nC\nD\n")
     var change3 = submit({fileA, fileB}, "test moved file")

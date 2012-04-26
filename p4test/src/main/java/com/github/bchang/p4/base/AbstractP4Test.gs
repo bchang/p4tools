@@ -53,7 +53,7 @@ abstract class AbstractP4Test extends TestClass {
 
     for (i in 0..9) {
       try {
-        if (_p4.run("info").contains("Server uptime")) {
+        if (_p4.runForRawOutput({"info"}).join("\n").contains("Server uptime")) {
           return
         }
       } catch (e : CommandFailedException) {
@@ -74,7 +74,7 @@ abstract class AbstractP4Test extends TestClass {
     }
     // Kill any previously running server
     try {
-      _p4.run("admin stop")
+      _p4.run({"admin", "stop"})
     }
     catch (e : CommandFailedException) {
       if (failIfNoKill) {
@@ -151,7 +151,7 @@ abstract class AbstractP4Test extends TestClass {
   function createFile(file : File, content : String) {
     print("Test creating and adding ${file.Path}")
     file.write(content)
-    print(p4Impl("add \"${file.Path}\"").trim())
+    print(p4Impl({ "add", file.Path }).trim())
   }
 
   function appendToFileAndSubmit(file : File, appendContent : String) : int {
@@ -161,7 +161,7 @@ abstract class AbstractP4Test extends TestClass {
 
   function appendToFile(file : File, appendContent : String) {
     print("Test appending to ${file.Path}")
-    print(p4Impl("edit \"${file.Path}\"").trim())
+    print(p4Impl({ "edit", file.Path }).trim())
     var content = file.read() + appendContent
     file.write(content)
   }
@@ -173,7 +173,7 @@ abstract class AbstractP4Test extends TestClass {
 
   function editFile(file : File, content : String) {
     print("Test editing ${file.Path}")
-    print(p4Impl("edit \"${file.Path}\"").trim())
+    print(p4Impl({ "edit", file.Path }).trim())
     file.write(content)
   }
 
@@ -184,9 +184,9 @@ abstract class AbstractP4Test extends TestClass {
 
   function integFile(fromFile : File, toFile : File) {
     print("Test integrating ${fromFile.Path} to ${toFile.Path}")
-    print(p4Impl("integ \"${fromFile.Path}\" \"${toFile.Path}\"").trim())
+    print(p4Impl({ "integ", fromFile.Path, toFile.Path }).trim())
     print("Test resolving ${toFile.Path}")
-    print(p4Impl("resolve -a \"${toFile.Path}\"").trim())
+    print(p4Impl({ "resolve", "-a", toFile.Path }).trim())
   }
 
   function integDirAndSubmit(fromDir : File, toDir : File) : int {
@@ -196,9 +196,9 @@ abstract class AbstractP4Test extends TestClass {
 
   function integDir(fromDir : File, toDir : File) {
     print("Test integrating ${fromDir.Path}/... to ${toDir.Path}/...")
-    print(p4Impl("integ \"${fromDir.Path}/...\" \"${toDir.Path}/...\"").trim())
+    print(p4Impl({ "integ", "${fromDir.Path}/...", "${toDir.Path}/..." }).trim())
     print("Test resolving ${toDir.Path}/...")
-    print(p4Impl("resolve -a \"${toDir.Path}/...\"").trim())
+    print(p4Impl({ "resolve", "-a", "${toDir.Path}/..." }).trim())
   }
 
   function moveFileAndSubmit(fromFile : File, toFile : File) : int {
@@ -208,8 +208,8 @@ abstract class AbstractP4Test extends TestClass {
 
   function moveFile(fromFile : File, toFile : File) {
     print("Test moving ${fromFile.Path} to ${toFile.Path}")
-    print(p4Impl("edit \"${fromFile.Path}\""))
-    print(p4Impl("move \"${fromFile.Path}/...\" \"${toFile.Path}/...\"").trim())
+    print(p4Impl({ "edit", fromFile.Path }))
+    print(p4Impl({ "move", "${fromFile.Path}/...", "${toFile.Path}/..." }).trim())
   }
 
   function deleteFileAndSubmit(file : File) : int {
@@ -219,10 +219,10 @@ abstract class AbstractP4Test extends TestClass {
 
   function deleteFile(file : File) {
     print("Test deleting ${file.Path}")
-    print(p4Impl("delete \"${file.Path}\"").trim())
+    print(p4Impl({ "delete", file.Path }).trim())
   }
 
-  function p4(cmd : String) {
+  function p4(cmd : List<String>) {
     print("Test running custom command '${cmd}'")
     print(p4Impl(cmd).trim())
   }
@@ -231,9 +231,9 @@ abstract class AbstractP4Test extends TestClass {
     print("Test submitting files " + files)
     var changeNum = newChange(desc)
     for (file in files) {
-      p4Impl("reopen -c ${changeNum} \"${file.Path}\"")
+      p4Impl({ "reopen", "-c", changeNum as String, file.Path })
     }
-    print(p4Impl("submit -c ${changeNum}").trim())
+    print(p4Impl({ "submit", "-c", changeNum as String }).trim())
     return changeNum
   }
 
@@ -241,9 +241,9 @@ abstract class AbstractP4Test extends TestClass {
     print("Test submitting dirs " + dirs)
     var changeNum = newChange(desc)
     for (dir in dirs) {
-      p4Impl("reopen -c ${changeNum} \"${dir.Path}/...\"")
+      p4Impl({ "reopen", "-c", changeNum as String, "${dir.Path}/..." })
     }
-    print(p4Impl("submit -c ${changeNum}").trim())
+    print(p4Impl({ "submit", "-c", changeNum as String }).trim())
     return changeNum
   }
 
@@ -265,8 +265,8 @@ abstract class AbstractP4Test extends TestClass {
   }
 
 
-  private function p4Impl(op : String) : String {
-    return _p4.run(op)
+  private function p4Impl(op : List<String>) : String {
+    return _p4.runForRawOutput(op).join("\n")
   }
 
   private function p4Impl(op : String, input : String) : String {
