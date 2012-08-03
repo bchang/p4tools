@@ -23,7 +23,7 @@ class FileLogImpl extends AbstractOperation implements FileLog {
   }
 
   override function run(p : Path) : List<EntryImpl> {
-    return run(p, 0)
+    return run(p, -1)
   }
 
   override function run(p : Path, maxRevs : int) : List<EntryImpl> {
@@ -31,14 +31,14 @@ class FileLogImpl extends AbstractOperation implements FileLog {
       p = PathRev.create(p.Path, p.EndRev)
     }
     _path = p
-    _maxRevs = maxRevs == 0 ? Integer.MAX_VALUE : maxRevs
+    _maxRevs = maxRevs
     var list : List<EntryImpl> = {}
     var p4obj = runForObjects().single()
     var dict = p4obj.Dict
 
     var i = 0
     while (true) {
-      if (i == _maxRevs || dict["rev" + i] == null) {
+      if ((i == _maxRevs && _maxRevs >= 0) || dict["rev" + i] == null) {
         break
       }
       var entry = new EntryImpl() {
@@ -78,7 +78,7 @@ class FileLogImpl extends AbstractOperation implements FileLog {
 
   override function getCommand() : List<String> {
     var command = {"filelog"}
-    if (_maxRevs > 0) {
+    if (_maxRevs >= 0) {
       command.add("-m")
       command.add(_maxRevs as String)
     }
