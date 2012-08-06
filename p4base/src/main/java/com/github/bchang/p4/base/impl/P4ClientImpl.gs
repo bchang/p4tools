@@ -126,8 +126,10 @@ class P4ClientImpl implements P4Client {
     var process = p4process(op)
     using (var input = process.InputStream) {
       var b = input.read() // gobble leading 0x7B
+      var idx = 0
       while (true) {
         b = input.read() // gobble 's'
+        idx++
         if (b == -1 || b == 0x0A) {
           break
         }
@@ -142,7 +144,7 @@ class P4ClientImpl implements P4Client {
         }
 
         if (b != 0x73) {
-          throw "oopsie"
+          throw "oopsie at ${idx} - expected ${0x73}, got ${b}"
         }
 
         var word = new byte[4]
@@ -230,7 +232,7 @@ class P4ClientImpl implements P4Client {
       builder.environment()["P4HOST"] = _host
     }
     if (_port != null && _port != 0) {
-      builder.environment()["P4PORT"] = _port as String
+      builder.environment()["P4PORT"] = (_host == null ? "localhost" : _host) + ":" + _port
     }
     if (_client != null) {
       builder.environment()["P4CLIENT"] = _client
