@@ -33,6 +33,7 @@ class P4ClientImpl implements P4Client {
   var _user : String as User
   var _verbose : boolean as Verbose
   var _stats : Stats as Stats
+  var _stderrPump : StdErrPump
 
   construct(hostname : String, port : int, clientname : String, username : String, isVerbose : boolean) {
     this(hostname, port, clientname, username, isVerbose, false)
@@ -47,6 +48,8 @@ class P4ClientImpl implements P4Client {
     if (recordStats) {
       _stats = new Stats()
     }
+    _stderrPump = new()
+    _stderrPump.start()
   }
 
   override function clearStats() {
@@ -240,7 +243,9 @@ class P4ClientImpl implements P4Client {
     if (_user != null) {
       builder.environment()["P4USER"] = _user
     }
-    return builder.redirectErrorStream(true).start()
+    var process = builder.start()
+    _stderrPump.attachErrorStream(process.ErrorStream)
+    return process
   }
 
   class Stats {

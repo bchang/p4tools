@@ -1,11 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <artifactId>p4tools</artifactId>
+    <groupId>com.github.bchang</groupId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.github.bchang</groupId>
   <artifactId>p4base</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <packaging>jar</packaging>
 
   <name>p4base</name>
 
@@ -18,6 +20,12 @@
   </dependencies>
 
   <build>
+    <plugins>
+      <plugin>
+        <groupId>org.gosu-lang</groupId>
+        <artifactId>maven-gosu-plugin</artifactId>
+      </plugin>
+    </plugins>
     <resources>
       <resource>
         <directory>src/main/java</directory>
