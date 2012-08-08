@@ -1,6 +1,6 @@
 #!/usr/bin/env gosu
 
-classpath "../p4api/target/classes,../p4base/src/main/java,../p4blame/src/main/java"
+classpath "../p4base/src/main/java,../p4blame/src/main/java,../p4api/target/classes,../p4base/target/classes"
 
 uses gw.lang.cli.CommandLineAccess
 uses com.github.bchang.p4.base.P4Factory
