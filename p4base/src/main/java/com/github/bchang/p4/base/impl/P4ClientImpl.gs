@@ -121,29 +121,6 @@ class P4ClientImpl implements P4Client {
     return ReflectUtil.construct("com.github.bchang.p4.blame.P4Blame", {this})
   }
 
-  private function readInputStreamIntoByteArray(is : java.io.InputStream) : byte[] {
-    var list = new ArrayList<java.lang.Byte>()
-    var bb = new byte[8]
-    using (var input = is) {
-      while (true) {
-        var numRead = input.read(bb)
-        if (numRead < 0) {
-          break
-        }
-        var i = 0
-        while (i < numRead) {
-          list.add(bb[i])
-          i++
-        }
-      }
-    }
-    var bytes = new byte[list.Count]
-    for (b in list index i) {
-      bytes[i] = b
-    }
-    return bytes
-  }
-
   private function writeToFile(bytes : byte[], file : java.io.File) {
     var bais = new java.io.ByteArrayInputStream(bytes)
     using (var out = new java.io.FileOutputStream(file)) {
@@ -157,7 +134,7 @@ class P4ClientImpl implements P4Client {
     var p4objs = new ArrayList<P4UnmarshalledObject>()
     var p4obj = new P4UnmarshalledObject()
     var process = p4process(op)
-    var bytes = readInputStreamIntoByteArray(process.InputStream)
+    var bytes = gw.util.StreamUtil.getContent(process.InputStream)
     var bais = new java.io.ByteArrayInputStream(bytes)
     using (var input = bais) {
       var b = input.read() // gobble leading 0x7B
