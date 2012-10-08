@@ -190,7 +190,7 @@ class P4Blame implements com.github.bchang.p4.base.P4Blame
   }
 
   private function isFirstRevisionForPath(logEntry : FileLog.Entry) : boolean {
-    return logEntry.Op == "add" or logEntry.Op == "branch"
+    return logEntry.Op == "add" or logEntry.Op == "branch" or logEntry.Op == "move/add"
   }
 
   private function indent(n : int) : String {
