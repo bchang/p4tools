@@ -33,7 +33,8 @@ class FileLogImpl extends AbstractOperation implements FileLog {
     _path = p
     _maxRevs = maxRevs
     var list : List<EntryImpl> = {}
-    var p4obj = runForObjects().single()
+    var p4objs = runForObjects()
+    var p4obj = p4objs.singleWhere( \ elt -> elt.Dict.get("depotFile") == p.Path )
     var dict = p4obj.Dict
 
     var i = 0
