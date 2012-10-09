@@ -2,7 +2,7 @@
   <parent>
     <artifactId>p4tools</artifactId>
     <groupId>com.github.bchang</groupId>
-    <version>0.1.1</version>
+    <version>0.2-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
@@ -14,7 +14,7 @@
     <dependency>
       <groupId>com.github.bchang</groupId>
       <artifactId>p4api</artifactId>
-      <version>0.1.1</version>
+      <version>0.2-SNAPSHOT</version>
     </dependency>
   </dependencies>
 
