@@ -10,6 +10,8 @@ uses java.util.Date
 uses java.text.SimpleDateFormat
 uses java.lang.Integer
 uses java.util.StringTokenizer
+uses com.github.bchang.p4.base.P4Client
+uses com.github.bchang.p4.base.P4UnmarshalledObject
 
 class FileLogImpl extends AbstractOperation implements FileLog {
 
@@ -26,6 +28,20 @@ class FileLogImpl extends AbstractOperation implements FileLog {
     return run(p, -1)
   }
 
+  private function pick(p4objs : List<P4UnmarshalledObject>, p : Path) : P4UnmarshalledObject {
+    if (p4objs.Count == 1) {
+      return p4objs[0]
+    }
+    else if (p4objs.Count > 1) {
+      var fstat = P4.runForObjects({"fstat", p.Path})
+      var depotFile = fstat[0].Dict["depotFile"]
+      return p4objs.singleWhere( \ elt -> elt.Dict["depotFile"] == depotFile )
+    }
+    else {
+      throw "filelog returned no history: " + p
+    }
+  }
+
   override function run(p : Path, maxRevs : int) : List<EntryImpl> {
     if (p typeis PathRange) {
       p = PathRev.create(p.Path, p.EndRev)
@@ -34,7 +50,7 @@ class FileLogImpl extends AbstractOperation implements FileLog {
     _maxRevs = maxRevs
     var list : List<EntryImpl> = {}
     var p4objs = runForObjects()
-    var p4obj = p4objs.singleWhere( \ elt -> elt.Dict.get("depotFile") == p.Path )
+    var p4obj = pick(p4objs, p)
     var dict = p4obj.Dict
 
     var i = 0

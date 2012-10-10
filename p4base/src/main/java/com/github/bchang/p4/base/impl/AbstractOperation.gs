@@ -4,7 +4,7 @@ uses com.github.bchang.p4.base.P4UnmarshalledObject
 
 abstract class AbstractOperation {
 
-  var _client : P4ClientImpl
+  var _client : P4ClientImpl as P4
 
   protected construct(client : P4ClientImpl) {
     _client = client
